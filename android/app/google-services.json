@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "107520282162",
+    "project_id": "seek-4b002",
+    "storage_bucket": "seek-4b002.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:107520282162:android:64699c7d1bdb4e313d362b",
+        "android_client_info": {
+          "package_name": "com.moprog.seek"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPxdZaxuStzfGjwiGcru5LAgRBAKdajf4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
