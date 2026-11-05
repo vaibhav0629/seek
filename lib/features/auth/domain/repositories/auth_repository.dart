@@ -8,10 +8,15 @@ abstract class AuthRepository {
 
   Future<void> signIn({required String email, required String password});
 
+  /// The extra profile fields are optional so existing callers keep working.
   Future<void> signUp({
     required String email,
     required String password,
     required String displayName,
+    String? phone,
+    String? city,
+    String? sport,
+    String? skillLevel,
   });
 
   Future<void> signOut();

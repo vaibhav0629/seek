@@ -7,6 +7,7 @@ class AppRoutes {
 
   // Login and the four bottom tabs
   static const login = '/login';
+  static const register = '/register';
   static const discover = '/discover';
   static const myClubs = '/my-clubs';
   static const create = '/create';
