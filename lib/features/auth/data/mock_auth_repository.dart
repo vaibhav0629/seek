@@ -31,6 +31,10 @@ class MockAuthRepository implements AuthRepository {
     required String email,
     required String password,
     required String displayName,
+    String? phone,
+    String? city,
+    String? sport,
+    String? skillLevel,
   }) async {
     await mockDelay();
     _setUser(kMockCurrentUserId);

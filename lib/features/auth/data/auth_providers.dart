@@ -1,10 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seek/features/auth/data/mock_auth_repository.dart';
+import 'package:seek/features/auth/data/firebase_auth_repository.dart';
 import 'package:seek/features/auth/domain/repositories/auth_repository.dart';
 
-/// To switch to Firebase, return FirebaseAuthRepository() here instead.
+/// Now using the real Firebase version. To go back to the fake one,
+/// return MockAuthRepository() here instead.
 final authRepositoryProvider = Provider<AuthRepository>(
-  (ref) => MockAuthRepository(),
+  (ref) => FirebaseAuthRepository(),
 );
 
 /// Emits the signed-in user's id, or null when signed out.
