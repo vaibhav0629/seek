@@ -89,6 +89,10 @@ final routerProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const CreateMeetScreen(),
       ),
       GoRoute(
+        path: '/clubs/create',
+        builder: (context, state) => const CreateClubScreen(),
+      ),
+      GoRoute(
         path: '/clubs/:clubId',
         builder: (context, state) =>
             ClubDetailScreen(clubId: state.pathParameters['clubId']!),

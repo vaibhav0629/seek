@@ -25,4 +25,16 @@ abstract class ClubRepository {
   });
 
   Future<void> leaveClub({required String clubId, required String userId});
+
+  /// Promotes a member to [ClubRole.admin].
+  Future<void> promoteMember({
+    required String clubId,
+    required String userId,
+  });
+
+  /// Removes a member from the club (same effect as leaving, but done by an admin).
+  Future<void> kickMember({
+    required String clubId,
+    required String userId,
+  });
 }
