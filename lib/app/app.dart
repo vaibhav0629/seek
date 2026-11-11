@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seek/app/router/app_router.dart';
+import 'package:seek/core/config/app_theme.dart';
 
 /// The root widget of seek.
 class SeekApp extends ConsumerWidget {
@@ -13,11 +14,7 @@ class SeekApp extends ConsumerWidget {
       title: 'seek',
       debugShowCheckedModeBanner: false,
       routerConfig: router,
-      // Temporary theme. It is replaced by lib/app/theme.dart in the next step.
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.light,
     );
   }
 }

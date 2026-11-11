@@ -13,12 +13,18 @@ class SportStyle {
         return const SportStyle(Icons.sports_soccer, Colors.green);
       case 'badminton':
         return const SportStyle(Icons.sports_tennis, Colors.orange);
+      case 'padel':
+        return const SportStyle(Icons.sports_tennis, Colors.teal);
       case 'basket':
       case 'basketball':
         return const SportStyle(Icons.sports_basketball, Colors.deepOrange);
       case 'lari':
       case 'running':
         return const SportStyle(Icons.directions_run, Colors.blue);
+      case 'pilates':
+        return const SportStyle(Icons.self_improvement, Colors.pink);
+      case 'mahjong':
+        return const SportStyle(Icons.casino, Colors.red);
       case 'voli':
       case 'volleyball':
         return const SportStyle(Icons.sports_volleyball, Colors.purple);

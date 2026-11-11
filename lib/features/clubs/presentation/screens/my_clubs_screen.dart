@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/presentation/screens/club_card.dart';
 import 'package:seek/features/clubs/presentation/screens/club_empty_state.dart';
+import 'package:seek/app/router/app_routes.dart';
 
 class MyClubsScreen extends ConsumerWidget {
   const MyClubsScreen({super.key});
@@ -18,7 +19,7 @@ class MyClubsScreen extends ConsumerWidget {
 // FAB hanya muncul kalau sudah punya club
       floatingActionButton: hasClubs
           ? FloatingActionButton.extended(
-        onPressed: () => context.push('/clubs/create'), // sesuaikan route
+        onPressed: () => context.push('AppRoutes.newClub'), // sesuaikan route
         icon: const Icon(Icons.add),
         label: const Text('Buat Club'),
       )
@@ -31,7 +32,7 @@ class MyClubsScreen extends ConsumerWidget {
             return ClubEmptyState(
               message: 'Kamu belum gabung club apa pun',
               actionLabel: 'Buat Club',
-              onAction: () => context.push('/clubs/create'), // sesuaikan route
+              onAction: () => context.push('AppRoutes.newClub'), // sesuaikan route
             );
           }
           return ListView.builder(
