@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:seek/app/router/app_routes.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/presentation/screens/club_card.dart';
 import 'package:seek/features/clubs/presentation/screens/club_empty_state.dart';
@@ -15,13 +16,13 @@ class MyClubsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('My Clubs')),
-// FAB hanya muncul kalau sudah punya club
+      // FAB hanya muncul kalau sudah punya club
       floatingActionButton: hasClubs
           ? FloatingActionButton.extended(
-        onPressed: () => context.push('/clubs/create'), // sesuaikan route
-        icon: const Icon(Icons.add),
-        label: const Text('Buat Club'),
-      )
+              onPressed: () => context.push(AppRoutes.newClub),
+              icon: const Icon(Icons.add),
+              label: const Text('Buat Club'),
+            )
           : null,
       body: clubsAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -31,18 +32,16 @@ class MyClubsScreen extends ConsumerWidget {
             return ClubEmptyState(
               message: 'Kamu belum gabung club apa pun',
               actionLabel: 'Buat Club',
-              onAction: () => context.push('/clubs/create'), // sesuaikan route
+              onAction: () => context.push(AppRoutes.newClub),
             );
           }
           return ListView.builder(
             padding: const EdgeInsets.only(top: 8, bottom: 88),
             itemCount: clubs.length,
-            itemBuilder: (context, i) =>
-                ClubCard(
-                  club: clubs[i],
-                  onTap: () =>
-                      context.push('/clubs/${clubs[i].id}'), // sesuaikan route
-                ),
+            itemBuilder: (context, i) => ClubCard(
+              club: clubs[i],
+              onTap: () => context.push(AppRoutes.club(clubs[i].id)),
+            ),
           );
         },
       ),
