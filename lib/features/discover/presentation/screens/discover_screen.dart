@@ -7,20 +7,21 @@ class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key});
 
   @override
-  ConsumerState<DiscoverScreen> createState() => _DiscoverScreenState();
+  ConsumerState<DiscoverScreen> createState() =>
+      _DiscoverScreenState();
 }
 
 class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
-  static const Color background = Color(0xFF10051F);
-  static const Color surface = Color(0xFF1D1035);
-  static const Color surface2 = Color(0xFF25163B);
-  static const Color primary = Color(0xFF7C3AED);
-  static const Color accent = Color(0xFFA855F7);
-  static const Color lavender = Color(0xFFC084FC);
-  static const Color textSecondary = Color(0xFFB8A9CC);
-  static const Color border = Color(0xFF392451);
+  // SEEK COLOR PALETTE
+  static const Color background = Color(0xFF192C38);
+  static const Color surface = Color(0xFF06384D);
+  static const Color surface2 = Color(0xFF11617A);
+  static const Color primary = Color(0xFFF2FF38);
+  static const Color textSecondary = Color(0xFFA9C1CA);
+  static const Color border = Color(0xFF285365);
 
-  final TextEditingController searchController = TextEditingController();
+  final TextEditingController searchController =
+      TextEditingController();
 
   String selectedSport = 'All';
   String searchQuery = '';
@@ -57,6 +58,320 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
     }
   }
 
+  Widget sectionTitle(String title, String trailing) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 19,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          trailing,
+          style: const TextStyle(
+            color: primary,
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // HERO BANNER
+  Widget buildHeroBanner() {
+    return Container(
+      width: double.infinity,
+      height: 215,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [
+            Color(0xFF06384D),
+            Color(0xFF11617A),
+            Color(0xFF192C38),
+          ],
+          begin: Alignment.bottomLeft,
+          end: Alignment.topRight,
+        ),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: border),
+      ),
+      child: Stack(
+        clipBehavior: Clip.hardEdge,
+        children: [
+          Positioned(
+            right: -20,
+            bottom: -25,
+            child: Icon(
+              Icons.sports_tennis_rounded,
+              size: 145,
+              color: Colors.white.withValues(alpha: 0.10),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'FIND YOUR\nNEXT GAME.',
+                style: TextStyle(
+                  fontSize: 27,
+                  height: 1.15,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 9),
+              const Text(
+                'Discover sports, meet people,\nand play together.',
+                style: TextStyle(
+                  fontSize: 12,
+                  height: 1.4,
+                  color: textSecondary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 15,
+                  vertical: 8,
+                ),
+                decoration: BoxDecoration(
+                  color: primary,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Text(
+                  'Explore Now  →',
+                  style: TextStyle(
+                    color: background,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // SEARCH BAR
+  Widget buildSearchBar() {
+    return Container(
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: border),
+      ),
+      child: TextField(
+        controller: searchController,
+        style: const TextStyle(color: Colors.white),
+        onChanged: (value) {
+          setState(() {
+            searchQuery = value;
+          });
+        },
+        decoration: const InputDecoration(
+          hintText: 'Search clubs or sports...',
+          hintStyle: TextStyle(
+            color: textSecondary,
+            fontSize: 13,
+          ),
+          prefixIcon: Icon(
+            Icons.search_rounded,
+            color: primary,
+          ),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(vertical: 16),
+        ),
+      ),
+    );
+  }
+
+  // POPULAR SPORTS
+  Widget buildSportsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        sectionTitle('Popular Sports', 'Explore'),
+        const SizedBox(height: 17),
+        SizedBox(
+          height: 95,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: sports.length,
+            separatorBuilder: (_, __) =>
+                const SizedBox(width: 15),
+            itemBuilder: (context, index) {
+              final sport = sports[index];
+              final isSelected =
+                  selectedSport == sport['name'];
+
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    selectedSport = sport['name'];
+                  });
+                },
+                child: SizedBox(
+                  width: 65,
+                  child: Column(
+                    children: [
+                      AnimatedContainer(
+                        duration:
+                            const Duration(milliseconds: 200),
+                        width: 55,
+                        height: 55,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? primary
+                              : surface2,
+                          borderRadius:
+                              BorderRadius.circular(18),
+                          border: Border.all(
+                            color: isSelected
+                                ? primary
+                                : border,
+                          ),
+                        ),
+                        child: Icon(
+                          sport['icon'],
+                          color: isSelected
+                              ? background
+                              : Colors.white,
+                          size: 26,
+                        ),
+                      ),
+                      const SizedBox(height: 7),
+                      Text(
+                        sport['name'],
+                        style: TextStyle(
+                          color: isSelected
+                              ? primary
+                              : textSecondary,
+                          fontSize: 10,
+                          fontWeight: isSelected
+                              ? FontWeight.bold
+                              : FontWeight.normal,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  // COMMUNITY CARD
+  Widget buildClubCard(dynamic club) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: border),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: surface2,
+              borderRadius: BorderRadius.circular(17),
+            ),
+            child: Icon(
+              getSportIcon(club.sport),
+              color: primary,
+              size: 30,
+            ),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  club.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  club.sport,
+                  style: const TextStyle(
+                    color: primary,
+                    fontSize: 12,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      color: textSecondary,
+                      size: 14,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        club.city,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: textSecondary,
+                          fontSize: 11,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14,
+              vertical: 10,
+            ),
+            decoration: BoxDecoration(
+              color: primary,
+              borderRadius: BorderRadius.circular(22),
+            ),
+            child: const Text(
+              'Explore',
+              style: TextStyle(
+                color: background,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final clubs = ref.watch(clubsProvider);
@@ -68,12 +383,19 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           data: (list) {
             final filteredClubs = list.where((club) {
               final matchesSport = selectedSport == 'All' ||
-                  club.sport.toLowerCase() == selectedSport.toLowerCase();
+                  club.sport.toLowerCase() ==
+                      selectedSport.toLowerCase();
 
               final matchesSearch =
-                  club.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                  club.sport.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                  club.city.toLowerCase().contains(searchQuery.toLowerCase());
+                  club.name.toLowerCase().contains(
+                        searchQuery.toLowerCase(),
+                      ) ||
+                  club.sport.toLowerCase().contains(
+                        searchQuery.toLowerCase(),
+                      ) ||
+                  club.city.toLowerCase().contains(
+                        searchQuery.toLowerCase(),
+                      );
 
               return matchesSport && matchesSearch;
             }).toList();
@@ -82,288 +404,88 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               slivers: [
                 SliverToBoxAdapter(
                   child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    padding: const EdgeInsets.fromLTRB(
+                      20, 16, 20, 0,
+                    ),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment:
+                          CrossAxisAlignment.start,
                       children: [
                         // HEADER
                         Row(
                           children: [
                             Container(
-                              width: 38,
-                              height: 38,
+                              width: 42,
+                              height: 42,
                               decoration: BoxDecoration(
-                                gradient: const LinearGradient(
-                                  colors: [primary, accent],
-                                ),
-                                borderRadius: BorderRadius.circular(12),
+                                color: primary,
+                                borderRadius:
+                                    BorderRadius.circular(13),
                               ),
                               child: const Icon(
-                                Icons.sports_soccer_rounded,
-                                color: Colors.white,
-                                size: 23,
+                                Icons.explore_rounded,
+                                color: background,
+                                size: 26,
                               ),
                             ),
-                            const SizedBox(width: 10),
+                            const SizedBox(width: 11),
                             const Text(
-                              'Playvo',
+                              'SEEK',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 25,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: -0.7,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1.5,
                               ),
                             ),
                             const Spacer(),
-                            IconButton(
-                              onPressed: () {},
-                              icon: const Icon(
-                                Icons.notifications_none_rounded,
-                                color: Colors.white,
-                                size: 27,
+                            Container(
+                              decoration: BoxDecoration(
+                                color: surface,
+                                borderRadius:
+                                    BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: border,
+                                ),
+                              ),
+                              child: IconButton(
+                                onPressed: () {},
+                                icon: const Icon(
+                                  Icons.notifications_none_rounded,
+                                  color: Colors.white,
+                                  size: 25,
+                                ),
                               ),
                             ),
                           ],
-                        ),
-
-                        const SizedBox(height: 22),
-
-                        // HERO BANNER
-                        Container(
-                          width: double.infinity,
-                          height: 175,
-                          padding: const EdgeInsets.all(22),
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [
-                                Color(0xFF5420A8),
-                                Color(0xFF7C3AED),
-                                Color(0xFFA855F7),
-                              ],
-                              begin: Alignment.bottomLeft,
-                              end: Alignment.topRight,
-                            ),
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                          child: Stack(
-                            children: [
-                              Positioned(
-                                right: -12,
-                                bottom: -25,
-                                child: Icon(
-                                  Icons.sports_basketball_rounded,
-                                  size: 145,
-                                  color: Colors.white.withValues(alpha: 0.13),
-                                ),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    'Play. Connect.\nMove Together.',
-                                    style: TextStyle(
-                                      fontSize: 25,
-                                      height: 1.2,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  const Text(
-                                    'Find your next game,\nmeet new people!',
-                                    style: TextStyle(
-                                      fontSize: 13,
-                                      height: 1.5,
-                                      color: Color(0xFFE9D5FF),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 8,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    child: const Text(
-                                      'Explore now →',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 22),
-
-                        // SEARCH BAR
-                        Container(
-                          decoration: BoxDecoration(
-                            color: surface,
-                            borderRadius: BorderRadius.circular(15),
-                            border: Border.all(color: border),
-                          ),
-                          child: TextField(
-                            controller: searchController,
-                            style: const TextStyle(color: Colors.white),
-                            onChanged: (value) {
-                              setState(() {
-                                searchQuery = value;
-                              });
-                            },
-                            decoration: const InputDecoration(
-                              hintText: 'Search clubs or sports...',
-                              hintStyle: TextStyle(
-                                color: textSecondary,
-                                fontSize: 13,
-                              ),
-                              prefixIcon: Icon(
-                                Icons.search_rounded,
-                                color: lavender,
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        const SizedBox(height: 26),
-
-                        // SPORTS SECTION
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Popular Sports',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              'Explore',
-                              style: TextStyle(
-                                color: lavender,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        SizedBox(
-                          height: 91,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: sports.length,
-                            separatorBuilder: (_, _) =>
-                                const SizedBox(width: 15),
-                            itemBuilder: (context, index) {
-                              final sport = sports[index];
-                              final isSelected =
-                                  selectedSport == sport['name'];
-
-                              return GestureDetector(
-                                onTap: () {
-                                  setState(() {
-                                    selectedSport = sport['name'];
-                                  });
-                                },
-                                child: SizedBox(
-                                  width: 65,
-                                  child: Column(
-                                    children: [
-                                      AnimatedContainer(
-                                        duration:
-                                            const Duration(milliseconds: 200),
-                                        width: 55,
-                                        height: 55,
-                                        decoration: BoxDecoration(
-                                          color: isSelected
-                                              ? primary
-                                              : surface2,
-                                          borderRadius:
-                                              BorderRadius.circular(18),
-                                          border: Border.all(
-                                            color: isSelected
-                                                ? lavender
-                                                : border,
-                                          ),
-                                        ),
-                                        child: Icon(
-                                          sport['icon'],
-                                          color: Colors.white,
-                                          size: 27,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 7),
-                                      Text(
-                                        sport['name'],
-                                        style: TextStyle(
-                                          color: isSelected
-                                              ? lavender
-                                              : textSecondary,
-                                          fontSize: 10,
-                                          fontWeight: isSelected
-                                              ? FontWeight.bold
-                                              : FontWeight.normal,
-                                        ),
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
                         ),
 
                         const SizedBox(height: 25),
 
-                        // CLUBS HEADER
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Explore Communities',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            Text(
-                              '${filteredClubs.length} clubs',
-                              style: const TextStyle(
-                                color: lavender,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
+                        buildHeroBanner(),
+
+                        const SizedBox(height: 22),
+
+                        buildSearchBar(),
+
+                        const SizedBox(height: 27),
+
+                        buildSportsSection(),
+
+                        const SizedBox(height: 27),
+
+                        sectionTitle(
+                          'Explore Communities',
+                          '${filteredClubs.length} clubs',
                         ),
 
-                        const SizedBox(height: 14),
+                        const SizedBox(height: 15),
                       ],
                     ),
                   ),
                 ),
 
-                // CLUB LIST
+                // COMMUNITY LIST
                 if (filteredClubs.isEmpty)
                   const SliverFillRemaining(
                     hasScrollBody: false,
@@ -374,7 +496,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                           Icon(
                             Icons.search_off_rounded,
                             size: 45,
-                            color: lavender,
+                            color: primary,
                           ),
                           SizedBox(height: 12),
                           Text(
@@ -399,106 +521,14 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
                   )
                 else
                   SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 25),
+                    padding: const EdgeInsets.fromLTRB(
+                      20, 0, 20, 25,
+                    ),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (context, index) {
-                          final club = filteredClubs[index];
-
-                          return Container(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            padding: const EdgeInsets.all(15),
-                            decoration: BoxDecoration(
-                              color: surface,
-                              borderRadius: BorderRadius.circular(18),
-                              border: Border.all(color: border),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 55,
-                                  height: 55,
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [primary, accent],
-                                      begin: Alignment.bottomLeft,
-                                      end: Alignment.topRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Icon(
-                                    getSportIcon(club.sport),
-                                    color: Colors.white,
-                                    size: 29,
-                                  ),
-                                ),
-                                const SizedBox(width: 13),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        club.name,
-                                        style: const TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 5),
-                                      Text(
-                                        club.sport,
-                                        style: const TextStyle(
-                                          color: lavender,
-                                          fontSize: 11,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Row(
-                                        children: [
-                                          const Icon(
-                                            Icons.location_on_outlined,
-                                            color: textSecondary,
-                                            size: 13,
-                                          ),
-                                          const SizedBox(width: 3),
-                                          Expanded(
-                                            child: Text(
-                                              club.city,
-                                              style: const TextStyle(
-                                                color: textSecondary,
-                                                fontSize: 11,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: primary,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: const Text(
-                                    'Explore',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
+                          return buildClubCard(
+                            filteredClubs[index],
                           );
                         },
                         childCount: filteredClubs.length,
@@ -508,17 +538,28 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
               ],
             );
           },
+
+          // LOADING
           loading: () => const Center(
-            child: CircularProgressIndicator(color: accent),
+            child: CircularProgressIndicator(
+              color: primary,
+            ),
           ),
+
+          // ERROR
           error: (error, _) => Center(
-            child: Text(
-              'Something went wrong: $error',
-              style: const TextStyle(color: Colors.white),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(
+                'Something went wrong: $error',
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
         ),
       ),
     );
-  }
+  }a
 }
