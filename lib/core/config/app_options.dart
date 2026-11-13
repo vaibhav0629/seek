@@ -10,6 +10,11 @@ class AppOptions {
     'Bandung',
   ];
 
+  static const List<String> scoringSports = ['Padel', 'Basketball'];
+
+  static bool supportsScoring(String sport) =>
+      scoringSports.any((s) => s.toLowerCase() == sport.toLowerCase());
+
   static const List<String> sports = [
     'Padel',
     'Basketball',
