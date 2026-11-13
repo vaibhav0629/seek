@@ -1,17 +1,83 @@
 import 'package:flutter/material.dart';
-import 'package:seek/core/widgets/placeholder_screen.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:seek/core/utils/currency_format.dart';
+import 'package:seek/core/widgets/empty_state.dart';
+import 'package:seek/core/widgets/loading_view.dart';
+import 'package:seek/features/auth/data/auth_providers.dart';
+import 'package:seek/features/meets/data/meet_providers.dart';
+import 'package:seek/features/payments/data/payment_providers.dart';
+import 'package:seek/features/payments/domain/entities/payment.dart';
+import 'package:seek/features/payments/presentation/widgets/mark_paid_button.dart';
+import 'package:seek/features/payments/presentation/widgets/payment_tile.dart';
 
-class PaymentsScreen extends StatelessWidget {
+/// The organizer's view of who has paid for a meet.
+class PaymentsScreen extends ConsumerWidget {
   const PaymentsScreen({super.key, required this.meetId});
 
   final String meetId;
 
   @override
-  Widget build(BuildContext context) {
-    return PlaceholderScreen(
-      title: 'Payments',
-      owner: 'Member 1 (lead)',
-      details: 'meetId: $meetId',
+  Widget build(BuildContext context, WidgetRef ref) {
+    final payments = ref.watch(meetPaymentsProvider(meetId));
+    // Payments only store user ids, so look names up from the RSVP list.
+    final rsvps = ref.watch(rsvpsProvider(meetId)).value ?? const [];
+    final names = {for (final r in rsvps) r.userId: r.userName};
+    final me = ref.watch(currentUserIdProvider);
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Payments')),
+      body: payments.when(
+        loading: () => const LoadingView(),
+        error: (e, _) => Center(child: Text('Error: $e')),
+        data: (list) {
+          if (list.isEmpty) {
+            return const EmptyState(
+              icon: Icons.payments_outlined,
+              title: 'No payments yet',
+              message: 'Payments for this meet will show up here.',
+            );
+          }
+          final paid =
+              list.where((p) => p.status == PaymentStatus.paid).toList();
+          final collected = paid.fold<int>(0, (sum, p) => sum + p.amount);
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              Text(
+                '${paid.length} of ${list.length} paid - '
+                '${formatRupiah(collected)} collected',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 12),
+              for (final p in list)
+                PaymentTile(
+                  payment: p,
+                  userName: names[p.userId] ?? 'Player',
+                  action: me == null
+                      ? null
+                      : MarkPaidButton(
+                          paid: p.status == PaymentStatus.paid,
+                          onMarkPaid: () => _markPaid(ref, p, me),
+                        ),
+                ),
+            ],
+          );
+        },
+      ),
     );
+  }
+
+  Future<void> _markPaid(
+    WidgetRef ref,
+    Payment payment,
+    String confirmedBy,
+  ) async {
+    await ref
+        .read(paymentRepositoryProvider)
+        .markPaid(paymentId: payment.id, confirmedBy: confirmedBy);
+    // Keep the RSVP's "paid" flag in sync, so the RSVP list can show it too.
+    await ref
+        .read(meetRepositoryProvider)
+        .setPaid(meetId: payment.meetId, userId: payment.userId, paid: true);
   }
 }
