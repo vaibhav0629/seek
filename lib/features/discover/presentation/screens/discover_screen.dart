@@ -207,7 +207,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: sports.length,
-            separatorBuilder: (_, __) =>
+            separatorBuilder: (_, _) =>
                 const SizedBox(width: 15),
             itemBuilder: (context, index) {
               final sport = sports[index];
@@ -561,5 +561,5 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
         ),
       ),
     );
-  }a
+  }
 }
