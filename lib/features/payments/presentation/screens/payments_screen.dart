@@ -9,6 +9,7 @@ import 'package:seek/features/meets/data/meet_providers.dart';
 import 'package:seek/features/payments/data/payment_providers.dart';
 import 'package:seek/features/payments/domain/entities/payment.dart';
 import 'package:seek/features/payments/presentation/widgets/mark_paid_button.dart';
+import 'package:seek/features/payments/presentation/widgets/payment_method_picker.dart';
 import 'package:seek/features/payments/presentation/widgets/payment_receipt_sheet.dart';
 import 'package:seek/features/payments/presentation/widgets/payment_summary_card.dart';
 import 'package:seek/features/payments/presentation/widgets/payment_tile.dart';
@@ -69,7 +70,7 @@ class PaymentsScreen extends ConsumerWidget {
                       ? null
                       : MarkPaidButton(
                           paid: p.status == PaymentStatus.paid,
-                          onMarkPaid: () => _markPaid(ref, p, me),
+                          onMarkPaid: () => _markPaid(context, ref, p, me),
                         ),
                 ),
             ],
@@ -80,13 +81,20 @@ class PaymentsScreen extends ConsumerWidget {
   }
 
   Future<void> _markPaid(
+    BuildContext context,
     WidgetRef ref,
     Payment payment,
     String confirmedBy,
   ) async {
-    await ref
-        .read(paymentRepositoryProvider)
-        .markPaid(paymentId: payment.id, confirmedBy: confirmedBy);
+    // Ask how it was paid first. Dismissing the sheet cancels everything.
+    final method = await PaymentMethodPicker.pick(context);
+    if (method == null) return;
+
+    await ref.read(paymentRepositoryProvider).markPaid(
+          paymentId: payment.id,
+          confirmedBy: confirmedBy,
+          method: method,
+        );
     // Keep the RSVP's "paid" flag in sync, so the RSVP list can show it too.
     await ref
         .read(meetRepositoryProvider)
