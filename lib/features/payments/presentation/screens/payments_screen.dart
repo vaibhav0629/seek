@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seek/core/utils/currency_format.dart';
 import 'package:seek/core/widgets/empty_state.dart';
 import 'package:seek/core/widgets/loading_view.dart';
 import 'package:seek/features/auth/data/auth_providers.dart';
@@ -8,6 +7,7 @@ import 'package:seek/features/meets/data/meet_providers.dart';
 import 'package:seek/features/payments/data/payment_providers.dart';
 import 'package:seek/features/payments/domain/entities/payment.dart';
 import 'package:seek/features/payments/presentation/widgets/mark_paid_button.dart';
+import 'package:seek/features/payments/presentation/widgets/payment_summary_card.dart';
 import 'package:seek/features/payments/presentation/widgets/payment_tile.dart';
 
 /// The organizer's view of who has paid for a meet.
@@ -37,17 +37,10 @@ class PaymentsScreen extends ConsumerWidget {
               message: 'Payments for this meet will show up here.',
             );
           }
-          final paid =
-              list.where((p) => p.status == PaymentStatus.paid).toList();
-          final collected = paid.fold<int>(0, (sum, p) => sum + p.amount);
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              Text(
-                '${paid.length} of ${list.length} paid - '
-                '${formatRupiah(collected)} collected',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              PaymentSummaryCard(payments: list),
               const SizedBox(height: 12),
               for (final p in list)
                 PaymentTile(
