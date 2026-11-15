@@ -2,19 +2,19 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  static const Color background = Color(0xFF10051F);
-  static const Color surface = Color(0xFF1D1035);
-  static const Color surface2 = Color(0xFF25163B);
+  static const Color background = Color(0xFF192C38);
+  static const Color surface = Color(0xFF06384D);
+  static const Color surface2 = Color(0xFF11617A);
 
-  static const Color primary = Color(0xFF7C3AED);
-  static const Color accent = Color(0xFFA855F7);
-  static const Color lavender = Color(0xFFC084FC);
+  static const Color primary = Color(0xFFF2FF38);
+  static const Color accent = Color(0xFF11617A);
+  static const Color lavender = Color(0xFFA9C1CA);
 
   static const Color textPrimary = Color(0xFFFFFFFF);
-  static const Color textSecondary = Color(0xFFB8A9CC);
-  static const Color mutedText = Color(0xFF827394);
+  static const Color textSecondary = Color(0xFFA9C1CA);
+  static const Color mutedText = Color(0xFF7895A1);
 
-  static const Color border = Color(0xFF392451);
+  static const Color border = Color(0xFF285365);
   static const Color success = Color(0xFF4ADE80);
   static const Color warning = Color(0xFFFBBF24);
   static const Color error = Color(0xFFFB7185);
@@ -29,7 +29,7 @@ class AppTheme {
         secondary: accent,
         surface: surface,
         error: error,
-        onPrimary: Colors.white,
+        onPrimary: background,
         onSurface: textPrimary,
       ),
       appBarTheme: const AppBarTheme(
@@ -61,7 +61,7 @@ class AppTheme {
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
           backgroundColor: primary,
-          foregroundColor: Colors.white,
+          foregroundColor: background,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
@@ -70,4 +70,3 @@ class AppTheme {
     );
   }
 }
-
