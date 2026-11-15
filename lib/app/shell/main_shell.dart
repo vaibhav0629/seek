@@ -20,6 +20,7 @@ class MainShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: background,
       body: navigationShell,
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
@@ -39,7 +40,8 @@ class MainShell extends StatelessWidget {
             elevation: 0,
             labelBehavior:
                 NavigationDestinationLabelBehavior.alwaysShow,
-            iconTheme: WidgetStateProperty.resolveWith<IconThemeData>(
+            iconTheme:
+                WidgetStateProperty.resolveWith<IconThemeData>(
               (states) {
                 if (states.contains(WidgetState.selected)) {
                   return const IconThemeData(
@@ -74,6 +76,10 @@ class MainShell extends StatelessWidget {
             ),
           ),
           child: NavigationBar(
+            backgroundColor: background,
+            indicatorColor: surface,
+            elevation: 0,
+            height: 72,
             selectedIndex: navigationShell.currentIndex,
             onDestinationSelected: (index) {
               navigationShell.goBranch(
