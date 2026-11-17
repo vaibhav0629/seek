@@ -7,6 +7,7 @@ import 'package:seek/app/shell/main_shell.dart';
 import 'package:seek/core/config/app_config.dart';
 import 'package:seek/core/utils/auth_refresh_notifier.dart';
 import 'package:seek/features/auth/presentation/screens/login_screen.dart';
+import 'package:seek/features/auth/presentation/screens/register_screen.dart';
 import 'package:seek/features/chat/presentation/screens/chat_screen.dart';
 import 'package:seek/features/clubs/presentation/screens/club_detail_screen.dart';
 import 'package:seek/features/clubs/presentation/screens/create_club_screen.dart';
@@ -34,15 +35,21 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       if (kBypassAuth) return null;
       final loggedIn = FirebaseAuth.instance.currentUser != null;
-      final onLogin = state.matchedLocation == AppRoutes.login;
-      if (!loggedIn && !onLogin) return AppRoutes.login;
-      if (loggedIn && onLogin) return AppRoutes.discover;
+      // Login and register are the only screens a logged-out user may see.
+      final onAuthPage = state.matchedLocation == AppRoutes.login ||
+          state.matchedLocation == AppRoutes.register;
+      if (!loggedIn && !onAuthPage) return AppRoutes.login;
+      if (loggedIn && onAuthPage) return AppRoutes.discover;
       return null;
     },
     routes: [
       GoRoute(
         path: AppRoutes.login,
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.register,
+        builder: (context, state) => const RegisterScreen(),
       ),
 
       // The four bottom tabs. Each tab keeps its own screen history.
@@ -87,10 +94,6 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.newMeet,
         builder: (context, state) => const CreateMeetScreen(),
-      ),
-      GoRoute(
-        path: '/clubs/create',
-        builder: (context, state) => const CreateClubScreen(),
       ),
       GoRoute(
         path: '/clubs/:clubId',

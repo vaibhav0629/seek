@@ -1,19 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:seek/app/router/app_routes.dart';
+import 'package:seek/core/config/app_options.dart';
 import 'package:seek/features/auth/data/auth_providers.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/domain/entities/club.dart';
-
-const _sports = [
-  'Futsal',
-  'Badminton',
-  'Basket',
-  'Lari',
-  'Voli',
-  'Sepak Bola',
-  'Lainnya',
-];
 
 class CreateClubScreen extends ConsumerStatefulWidget {
   const CreateClubScreen({super.key});
@@ -81,7 +73,7 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
       );
 
       // 4. Pindah ke halaman detail club yang baru dibuat
-      router.pushReplacement('/clubs/$newId'); // sesuaikan route
+      router.pushReplacement(AppRoutes.club(newId));
     } catch (_) {
       messenger.showSnackBar(
         const SnackBar(content: Text('Gagal membuat club, coba lagi')),
@@ -126,7 +118,7 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
                   prefixIcon: Icon(Icons.sports_outlined),
                   border: OutlineInputBorder(),
                 ),
-                items: _sports
+                items: AppOptions.sports
                     .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                     .toList(),
                 onChanged: (v) => setState(() => _sport = v),
