@@ -27,10 +27,12 @@ class ClubMembersList extends ConsumerWidget {
         // Salin dulu sebelum sort, urutan: owner, admin, member
         final members = [...data]..sort((a, b) => _rank(a).compareTo(_rank(b)));
 
-        final iAmAdmin = currentUserId != null &&
+        final iAmAdmin =
+            currentUserId != null &&
             (club.ownerId == currentUserId ||
-                members.any((m) =>
-                m.userId == currentUserId && m.role == ClubRole.admin));
+                members.any(
+                  (m) => m.userId == currentUserId && m.role == ClubRole.admin,
+                ));
 
         return ListView.separated(
           itemCount: members.length,
@@ -44,8 +46,7 @@ class ClubMembersList extends ConsumerWidget {
               member: member,
               isOwner: isOwner,
               showActions: iAmAdmin && !isOwner && !isMe,
-              onAction: (action) =>
-                  _handleAction(context, ref, member, action),
+              onAction: (action) => _handleAction(context, ref, member, action),
             );
           },
         );
@@ -54,11 +55,11 @@ class ClubMembersList extends ConsumerWidget {
   }
 
   Future<void> _handleAction(
-      BuildContext context,
-      WidgetRef ref,
-      ClubMember member,
-      MemberAction action,
-      ) async {
+    BuildContext context,
+    WidgetRef ref,
+    ClubMember member,
+    MemberAction action,
+  ) async {
     final repo = ref.read(clubRepositoryProvider);
     final messenger = ScaffoldMessenger.of(context);
 
@@ -66,6 +67,7 @@ class ClubMembersList extends ConsumerWidget {
       switch (action) {
         case MemberAction.promote:
           await repo.promoteMember(clubId: club.id, userId: member.userId);
+          if (!context.mounted) return;
           messenger.showSnackBar(
             SnackBar(content: Text('${member.userName} jadi admin')),
           );
@@ -73,14 +75,17 @@ class ClubMembersList extends ConsumerWidget {
           final confirmed = await _confirmKick(context, member);
           if (confirmed != true) return;
           await repo.kickMember(clubId: club.id, userId: member.userId);
+          if (!context.mounted) return;
           messenger.showSnackBar(
             SnackBar(content: Text('${member.userName} dikeluarkan')),
           );
       }
-    } catch (_) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Terjadi kesalahan, coba lagi')),
-      );
+    } catch (error) {
+      if (!context.mounted) return;
+      final message = error is StateError
+          ? error.message.toString()
+          : 'Terjadi kesalahan, coba lagi';
+      messenger.showSnackBar(SnackBar(content: Text(message)));
     }
   }
 

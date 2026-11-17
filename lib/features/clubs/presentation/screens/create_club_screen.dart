@@ -17,22 +17,22 @@ class CreateClubScreen extends ConsumerStatefulWidget {
 class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameCtrl = TextEditingController();
-  final _cityCtrl = TextEditingController();
   final _descCtrl = TextEditingController();
 
   String? _sport;
+  String? _city;
   bool _isPrivate = false;
   bool _saving = false;
 
   @override
   void dispose() {
     _nameCtrl.dispose();
-    _cityCtrl.dispose();
     _descCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _submit() async {
+    if (_saving) return;
     // 1. Validasi semua field
     if (!_formKey.currentState!.validate()) return;
 
@@ -54,7 +54,7 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
         id: '',
         name: _nameCtrl.text.trim(),
         sport: _sport!,
-        city: _cityCtrl.text.trim(),
+        city: _city!,
         description: _descCtrl.text.trim(),
         ownerId: userId,
         isPrivate: _isPrivate,
@@ -62,10 +62,12 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
       );
 
       // 3. Simpan lewat repository
-      final newId = await ref.read(clubRepositoryProvider).createClub(
-        club,
-        ownerName: 'Pengguna', // ganti dengan nama user dari auth provider
-      );
+      final newId = await ref
+          .read(clubRepositoryProvider)
+          .createClub(
+            club,
+            ownerName: 'Pengguna', // ganti dengan nama user dari auth provider
+          );
 
       if (!mounted) return;
       messenger.showSnackBar(
@@ -74,10 +76,12 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
 
       // 4. Pindah ke halaman detail club yang baru dibuat
       router.pushReplacement(AppRoutes.club(newId));
-    } catch (_) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Gagal membuat club, coba lagi')),
-      );
+    } catch (error) {
+      if (!mounted) return;
+      final message = error is StateError
+          ? error.message
+          : 'Gagal membuat club, coba lagi';
+      messenger.showSnackBar(SnackBar(content: Text(message.toString())));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -112,7 +116,8 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                initialValue: _sport, // kalau merah (Flutter lama), ganti 'value'
+                initialValue:
+                    _sport, // kalau merah (Flutter lama), ganti 'value'
                 decoration: const InputDecoration(
                   labelText: 'Olahraga',
                   prefixIcon: Icon(Icons.sports_outlined),
@@ -125,17 +130,21 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
                 validator: (v) => v == null ? 'Pilih olahraga' : null,
               ),
               const SizedBox(height: 16),
-              TextFormField(
-                controller: _cityCtrl,
-                textInputAction: TextInputAction.next,
-                textCapitalization: TextCapitalization.words,
+              DropdownButtonFormField<String>(
+                initialValue: _city,
                 decoration: const InputDecoration(
                   labelText: 'Kota',
                   prefixIcon: Icon(Icons.place_outlined),
                   border: OutlineInputBorder(),
                 ),
-                validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Kota wajib diisi' : null,
+                items: AppOptions.cities
+                    .map(
+                      (city) =>
+                          DropdownMenuItem(value: city, child: Text(city)),
+                    )
+                    .toList(),
+                onChanged: (value) => setState(() => _city = value),
+                validator: (value) => value == null ? 'Pilih kota' : null,
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -162,10 +171,10 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
                 onPressed: _saving ? null : _submit,
                 child: _saving
                     ? const SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                )
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
                     : const Text('Buat Club'),
               ),
             ],
