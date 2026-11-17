@@ -32,6 +32,7 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
   }
 
   Future<void> _submit() async {
+    if (_saving) return;
     // 1. Validasi semua field
     if (!_formKey.currentState!.validate()) return;
 
@@ -75,10 +76,12 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
 
       // 4. Pindah ke halaman detail club yang baru dibuat
       router.pushReplacement(AppRoutes.club(newId));
-    } catch (_) {
-      messenger.showSnackBar(
-        const SnackBar(content: Text('Gagal membuat club, coba lagi')),
-      );
+    } catch (error) {
+      if (!mounted) return;
+      final message = error is StateError
+          ? error.message
+          : 'Gagal membuat club, coba lagi';
+      messenger.showSnackBar(SnackBar(content: Text(message.toString())));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
