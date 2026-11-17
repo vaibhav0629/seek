@@ -110,6 +110,14 @@ class MockClubRepository implements ClubRepository {
     required String userId,
   }) async {
     await mockDelay();
+    final club = _clubs.items.cast<Club?>().firstWhere(
+      (item) => item?.id == clubId,
+      orElse: () => null,
+    );
+    if (club?.ownerId == userId) {
+      throw StateError('Owner harus mentransfer kepemilikan sebelum keluar');
+    }
+
     final before = _members.items.length;
     _members.mutate(
       (items) => items.removeWhere(

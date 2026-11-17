@@ -40,4 +40,26 @@ void main() {
       expect(otherId, isNot(id));
     },
   );
+
+  test('does not allow the club owner to leave', () async {
+    final repository = MockClubRepository();
+    const ownerId = 'club-owner';
+    final clubId = await repository.createClub(
+      const Club(
+        id: '',
+        name: 'Owner Protected Club',
+        sport: 'Running',
+        city: 'Bandung',
+        ownerId: ownerId,
+      ),
+      ownerName: 'Owner',
+    );
+
+    await expectLater(
+      repository.leaveClub(clubId: clubId, userId: ownerId),
+      throwsA(isA<StateError>()),
+    );
+    expect(await repository.watchClub(clubId).first, isNotNull);
+    expect(await repository.watchMembers(clubId).first, hasLength(1));
+  });
 }
