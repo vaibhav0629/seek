@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:seek/core/config/app_options.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/domain/entities/club.dart';
 import 'package:seek/features/clubs/presentation/screens/club_card.dart';
 import 'package:seek/features/clubs/presentation/screens/club_empty_state.dart';
 
-/// Starter screen and example of the pattern every screen uses:
-/// 1. extend ConsumerWidget (it gives you "ref")
-/// 2. ask for data with ref.watch(someProvider)
-/// 3. use .when(...) to show data, a loading spinner, or an error
+/// Discover clubs using search and sport/city filters.
 class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key});
 
@@ -56,7 +54,7 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
 
   Future<void> _showFilters(List<Club> clubs) async {
     final sports = clubs.map((club) => club.sport).toSet().toList()..sort();
-    final cities = clubs.map((club) => club.city).toSet().toList()..sort();
+    const cities = AppOptions.cities;
     var sport = _selectedSport;
     var city = _selectedCity;
 
