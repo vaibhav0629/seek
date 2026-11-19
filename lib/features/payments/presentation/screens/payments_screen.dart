@@ -5,6 +5,7 @@ import 'package:seek/core/widgets/loading_view.dart';
 import 'package:seek/features/auth/data/auth_providers.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/domain/entities/club_member.dart';
+import 'package:seek/features/meets/data/meet_permissions.dart';
 import 'package:seek/features/meets/data/meet_providers.dart';
 import 'package:seek/features/payments/data/payment_providers.dart';
 import 'package:seek/features/payments/domain/entities/payment.dart';
@@ -37,6 +38,7 @@ class PaymentsScreen extends ConsumerWidget {
       for (final r in rsvps) r.userId: r.userName,
     };
     final me = ref.watch(currentUserIdProvider);
+    final canManage = ref.watch(canManageMeetProvider(meetId));
 
     return Scaffold(
       appBar: AppBar(title: const Text('Payments')),
@@ -66,7 +68,7 @@ class PaymentsScreen extends ConsumerWidget {
                     userName: names[p.userId] ?? 'Player',
                     confirmedByName: names[p.confirmedBy],
                   ),
-                  action: me == null
+                  action: (me == null || !canManage)
                       ? null
                       : MarkPaidButton(
                           paid: p.status == PaymentStatus.paid,
