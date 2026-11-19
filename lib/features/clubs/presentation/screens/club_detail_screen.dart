@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
+import 'package:seek/app/router/app_routes.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/presentation/screens/club_header.dart';
@@ -32,7 +34,17 @@ class ClubDetailScreen extends ConsumerWidget {
         }
 
         return Scaffold(
-          appBar: AppBar(title: Text(club.name)),
+          appBar: AppBar(
+            title: Text(club.name),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.chat_bubble_outline),
+                tooltip: 'Club chat',
+                onPressed: () => context.push(AppRoutes.clubChat(club.id)),
+              ),
+            ],
+          ),
+          
           body: Column(
             children: [
               ClubHeader(club: club, action: JoinClubButton(club: club)),
