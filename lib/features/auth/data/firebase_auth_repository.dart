@@ -4,7 +4,7 @@ import 'package:seek/features/auth/domain/auth_exception.dart';
 import 'package:seek/features/auth/domain/repositories/auth_repository.dart';
 
 /// The real login. Accounts live in Firebase Auth, and the profile is saved in
-/// Firestore at users/{uid} (the same uid that currentUserId returns).
+/// Firestore at users/{uid} in the same shape as AppUser.toMap().
 class FirebaseAuthRepository implements AuthRepository {
   FirebaseAuthRepository({FirebaseAuth? auth, FirebaseFirestore? firestore})
       : _auth = auth ?? FirebaseAuth.instance,
@@ -50,14 +50,14 @@ class FirebaseAuthRepository implements AuthRepository {
       final user = credential.user!;
       await user.updateDisplayName(displayName.trim());
 
+      // Same keys as AppUser.toMap(), so the profile screen can read it.
       await _db.collection('users').doc(user.uid).set({
-        'uid': user.uid,
-        'name': displayName.trim(),
+        'displayName': displayName.trim(),
         'email': email.trim(),
-        'phone': phone?.trim(),
-        'city': city,
-        'sport': sport,
-        'skillLevel': skillLevel,
+        'phone': phone?.trim() ?? '',
+        'city': city ?? '',
+        'sports': sport == null ? <String>[] : [sport],
+        'skillLevel': skillLevel ?? '',
         'createdAt': FieldValue.serverTimestamp(),
       });
     } on FirebaseAuthException catch (e) {
