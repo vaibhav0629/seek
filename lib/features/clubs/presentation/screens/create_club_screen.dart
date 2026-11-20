@@ -6,6 +6,7 @@ import 'package:seek/core/config/app_options.dart';
 import 'package:seek/features/auth/data/auth_providers.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/domain/entities/club.dart';
+import 'package:seek/features/profile/data/profile_providers.dart';
 
 class CreateClubScreen extends ConsumerStatefulWidget {
   const CreateClubScreen({super.key});
@@ -61,12 +62,15 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
         createdAt: DateTime.now(),
       );
 
+      final profile = await ref.read(currentUserProvider.future);
+      final ownerName = profile?.displayName ?? 'Pengguna';
+
       // 3. Simpan lewat repository
       final newId = await ref
           .read(clubRepositoryProvider)
           .createClub(
             club,
-            ownerName: 'Pengguna', // ganti dengan nama user dari auth provider
+            ownerName: ownerName, // ganti dengan nama user dari auth provider
           );
 
       if (!mounted) return;

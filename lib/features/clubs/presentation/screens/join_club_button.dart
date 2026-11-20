@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seek/features/auth/data/auth_providers.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/domain/entities/club.dart';
+import 'package:seek/features/profile/data/profile_providers.dart';
 
 class JoinClubButton extends ConsumerStatefulWidget {
   final Club club;
@@ -73,6 +74,7 @@ class _JoinClubButtonState extends ConsumerState<JoinClubButton> {
   @override
   Widget build(BuildContext context) {
     final club = widget.club;
+    final profileName = ref.watch(currentUserProvider).value?.displayName;
     final userId = ref.watch(currentUserIdProvider);
     final members =
         ref.watch(clubMembersProvider(club.id)).asData?.value ?? const [];
@@ -114,7 +116,7 @@ class _JoinClubButtonState extends ConsumerState<JoinClubButton> {
         () => repo.joinClub(
           clubId: club.id,
           userId: userId,
-          userName: widget.userName,
+          userName: profileName ?? widget.userName,
         ),
         'Berhasil gabung ke ${club.name}',
       ),
