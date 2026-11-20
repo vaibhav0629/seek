@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 
-// Reusable dropdown used for sport and skill level.
+// Reusable dropdown used for city, sport and skill level.
 class AppDropdownField extends StatelessWidget {
   final String label;
   final IconData icon;
   final List<String> items;
   final String? value;
   final ValueChanged<String?> onChanged;
+  final String? Function(String?)? validator; // To validate
 
   const AppDropdownField({
     super.key,
@@ -15,12 +16,14 @@ class AppDropdownField extends StatelessWidget {
     required this.items,
     required this.value,
     required this.onChanged,
+    this.validator,
   });
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
       initialValue: value,
+      validator: validator,
       decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
       items: items
           .map((item) => DropdownMenuItem(value: item, child: Text(item)))
