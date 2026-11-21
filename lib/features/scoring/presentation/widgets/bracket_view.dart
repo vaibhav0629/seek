@@ -41,7 +41,7 @@ class BracketView extends StatelessWidget {
         children: [
           for (final r in rounds)
             SizedBox(
-              width: 280,
+              width: 260,
               child: Column(
                 children: [
                   Padding(
