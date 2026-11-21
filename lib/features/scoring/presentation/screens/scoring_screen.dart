@@ -11,6 +11,7 @@ import 'package:seek/features/scoring/domain/scoring_sports.dart';
 import 'package:seek/features/scoring/presentation/widgets/match_score_card.dart';
 import 'package:seek/features/scoring/presentation/widgets/score_input_sheet.dart';
 import 'package:seek/features/scoring/presentation/widgets/standings_table.dart';
+import 'package:seek/features/scoring/presentation/widgets/match_history_list.dart';
 
 class ScoringScreen extends ConsumerWidget {
   const ScoringScreen({super.key, required this.meetId});
@@ -67,7 +68,7 @@ class _ScoringBody extends ConsumerWidget {
         canEnterScore(userId: userId, meet: meet, clubMembers: members);
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: Text('Scoring - ${meet.title}'),
@@ -75,6 +76,7 @@ class _ScoringBody extends ConsumerWidget {
             tabs: [
               Tab(text: 'Match'),
               Tab(text: 'Klasemen'),
+              Tab(text: 'Riwayat'),
             ],
           ),
         ),
@@ -101,6 +103,7 @@ class _ScoringBody extends ConsumerWidget {
                   ],
                 ),
                 StandingsTable(matches: matches, playerNames: names),
+                MatchHistoryList(matches: matches, playerNames: names),
               ],
             );
           },
