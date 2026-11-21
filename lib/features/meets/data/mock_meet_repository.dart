@@ -18,12 +18,17 @@ class MockMeetRepository implements MeetRepository {
   @override
   Stream<List<Meet>> watchMeets({String? clubId, String? sport}) {
     return _meets.watch((meets) {
-      final result = meets
-          .where((m) => clubId == null || m.clubId == clubId)
-          .where((m) =>
-              sport == null || m.sport.toLowerCase() == sport.toLowerCase())
-          .toList()
-        ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+      final result =
+          meets
+              .where((m) => clubId == null || m.clubId == clubId)
+              .where(
+                (m) =>
+                    sport == null ||
+                    m.sport.toLowerCase() == sport.toLowerCase(),
+              )
+              .toList()
+            ..sort((a, b) => a.startsAt.compareTo(b.startsAt));
+
       return result;
     });
   }
@@ -38,11 +43,13 @@ class MockMeetRepository implements MeetRepository {
   @override
   Stream<List<Rsvp>> watchRsvps(String meetId) {
     return _rsvps.watch((rsvps) {
-      final result = rsvps
-          .where((r) => r.meetId == meetId)
-          .where((r) => r.status != RsvpStatus.cancelled)
-          .toList()
-        ..sort((a, b) => _time(a.joinedAt).compareTo(_time(b.joinedAt)));
+      final result =
+          rsvps
+              .where((r) => r.meetId == meetId)
+              .where((r) => r.status != RsvpStatus.cancelled)
+              .toList()
+            ..sort((a, b) => _time(a.joinedAt).compareTo(_time(b.joinedAt)));
+
       return result;
     });
   }
@@ -53,6 +60,7 @@ class MockMeetRepository implements MeetRepository {
       final mine = rsvps
           .where((r) => r.meetId == meetId && r.userId == userId)
           .firstOrNull;
+
       return mine?.status == RsvpStatus.cancelled ? null : mine;
     });
   }
@@ -60,8 +68,13 @@ class MockMeetRepository implements MeetRepository {
   @override
   Future<String> createMeet(Meet meet) async {
     await mockDelay();
+
     final id = meet.id.isEmpty ? mockId('meet') : meet.id;
-    _meets.mutate((items) => items.add(_copy(meet, id: id)));
+
+    _meets.mutate((items) {
+      items.add(_copy(meet, id: id));
+    });
+
     return id;
   }
 
@@ -72,17 +85,30 @@ class MockMeetRepository implements MeetRepository {
     required String userName,
   }) async {
     await mockDelay();
+
     final meet = _meets.items.firstWhere(
       (m) => m.id == meetId,
       orElse: () => throw StateError('No meet with id $meetId'),
     );
+
+    // Prevent joining cancelled or finished meets.
+    if (meet.status == MeetStatus.cancelled ||
+        meet.status == MeetStatus.finished) {
+      throw StateError('This meet is no longer available.');
+    }
+
     final existing = _rsvps.items
         .where((r) => r.meetId == meetId && r.userId == userId)
         .firstOrNull;
+
+    // Prevent duplicate RSVP.
     if (existing != null && existing.status != RsvpStatus.cancelled) {
-      return existing.status; // already signed up
+      return existing.status;
     }
+
+    // Automatically assign going or waitlist status.
     final status = meet.isFull ? RsvpStatus.waitlist : RsvpStatus.going;
+
     final rsvp = Rsvp(
       userId: userId,
       meetId: meetId,
@@ -90,11 +116,15 @@ class MockMeetRepository implements MeetRepository {
       status: status,
       joinedAt: DateTime.now(),
     );
+
     _rsvps.mutate((items) {
       items.removeWhere((r) => r.meetId == meetId && r.userId == userId);
+
       items.add(rsvp);
     });
+
     _recount(meetId);
+
     return status;
   }
 
@@ -104,27 +134,43 @@ class MockMeetRepository implements MeetRepository {
     required String userId,
   }) async {
     await mockDelay();
-    final index = _rsvps.items
-        .indexWhere((r) => r.meetId == meetId && r.userId == userId);
+
+    final index = _rsvps.items.indexWhere(
+      (r) => r.meetId == meetId && r.userId == userId,
+    );
+
     if (index == -1) return;
+
     final leaving = _rsvps.items[index];
+
+    // Do nothing if the RSVP was already cancelled.
+    if (leaving.status == RsvpStatus.cancelled) return;
+
     _rsvps.mutate((items) {
       items[index] = leaving.copyWith(status: RsvpStatus.cancelled);
+
+      // Promote the longest-waiting participant if a going participant leaves.
       if (leaving.status == RsvpStatus.going) {
-        // Promote the longest-waiting person. (Real app: also notify them
-        // with a push notification.)
-        final waiting = items
-            .where((r) => r.meetId == meetId && r.status == RsvpStatus.waitlist)
-            .toList()
-          ..sort((a, b) => _time(a.joinedAt).compareTo(_time(b.joinedAt)));
+        final waiting =
+            items
+                .where(
+                  (r) => r.meetId == meetId && r.status == RsvpStatus.waitlist,
+                )
+                .toList()
+              ..sort((a, b) => _time(a.joinedAt).compareTo(_time(b.joinedAt)));
+
         if (waiting.isNotEmpty) {
           final next = items.indexWhere(
             (r) => r.meetId == meetId && r.userId == waiting.first.userId,
           );
-          items[next] = items[next].copyWith(status: RsvpStatus.going);
+
+          if (next != -1) {
+            items[next] = items[next].copyWith(status: RsvpStatus.going);
+          }
         }
       }
     });
+
     _recount(meetId);
   }
 
@@ -135,12 +181,18 @@ class MockMeetRepository implements MeetRepository {
     required bool paid,
   }) async {
     await mockDelay();
+
     _rsvps.mutate((items) {
-      final index =
-          items.indexWhere((r) => r.meetId == meetId && r.userId == userId);
+      final index = items.indexWhere(
+        (r) => r.meetId == meetId && r.userId == userId,
+      );
+
       if (index == -1) return;
-      items[index] = items[index]
-          .copyWith(paid: paid, paidAt: paid ? DateTime.now() : null);
+
+      items[index] = items[index].copyWith(
+        paid: paid,
+        paidAt: paid ? DateTime.now() : null,
+      );
     });
   }
 
@@ -151,10 +203,23 @@ class MockMeetRepository implements MeetRepository {
     required bool checkedIn,
   }) async {
     await mockDelay();
+
+    final index = _rsvps.items.indexWhere(
+      (r) => r.meetId == meetId && r.userId == userId,
+    );
+
+    if (index == -1) {
+      throw StateError('RSVP not found.');
+    }
+
+    final rsvp = _rsvps.items[index];
+
+    // Only confirmed participants can check in.
+    if (rsvp.status != RsvpStatus.going) {
+      throw StateError('Only confirmed participants can check in.');
+    }
+
     _rsvps.mutate((items) {
-      final index =
-          items.indexWhere((r) => r.meetId == meetId && r.userId == userId);
-      if (index == -1) return;
       items[index] = items[index].copyWith(checkedIn: checkedIn);
     });
   }
@@ -164,36 +229,47 @@ class MockMeetRepository implements MeetRepository {
     final going = _rsvps.items
         .where((r) => r.meetId == meetId && r.status == RsvpStatus.going)
         .length;
+
     final waiting = _rsvps.items
         .where((r) => r.meetId == meetId && r.status == RsvpStatus.waitlist)
         .length;
+
     _meets.mutate((items) {
       final index = items.indexWhere((m) => m.id == meetId);
+
       if (index == -1) return;
-      items[index] =
-          _copy(items[index], goingCount: going, waitlistCount: waiting);
+
+      items[index] = _copy(
+        items[index],
+        goingCount: going,
+        waitlistCount: waiting,
+      );
     });
   }
 
-  DateTime _time(DateTime? value) => value ?? DateTime.fromMillisecondsSinceEpoch(0);
+  DateTime _time(DateTime? value) {
+    return value ?? DateTime.fromMillisecondsSinceEpoch(0);
+  }
 
-  Meet _copy(Meet m, {String? id, int? goingCount, int? waitlistCount}) => Meet(
-        id: id ?? m.id,
-        clubId: m.clubId,
-        title: m.title,
-        sport: m.sport,
-        description: m.description,
-        startsAt: m.startsAt,
-        venueName: m.venueName,
-        latitude: m.latitude,
-        longitude: m.longitude,
-        geohash: m.geohash,
-        maxPlayers: m.maxPlayers,
-        fee: m.fee,
-        createdBy: m.createdBy,
-        status: m.status,
-        goingCount: goingCount ?? m.goingCount,
-        waitlistCount: waitlistCount ?? m.waitlistCount,
-        createdAt: m.createdAt ?? DateTime.now(),
-      );
+  Meet _copy(Meet m, {String? id, int? goingCount, int? waitlistCount}) {
+    return Meet(
+      id: id ?? m.id,
+      clubId: m.clubId,
+      title: m.title,
+      sport: m.sport,
+      description: m.description,
+      startsAt: m.startsAt,
+      venueName: m.venueName,
+      latitude: m.latitude,
+      longitude: m.longitude,
+      geohash: m.geohash,
+      maxPlayers: m.maxPlayers,
+      fee: m.fee,
+      createdBy: m.createdBy,
+      status: m.status,
+      goingCount: goingCount ?? m.goingCount,
+      waitlistCount: waitlistCount ?? m.waitlistCount,
+      createdAt: m.createdAt ?? DateTime.now(),
+    );
+  }
 }
