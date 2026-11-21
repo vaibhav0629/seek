@@ -7,9 +7,11 @@ import 'package:seek/features/meets/domain/entities/meet.dart';
 import 'package:seek/features/scoring/data/match_providers.dart';
 import 'package:seek/features/scoring/domain/entities/game_match.dart';
 import 'package:seek/features/scoring/domain/score_permission.dart';
+import 'package:seek/features/scoring/domain/scoring_sports.dart';
 import 'package:seek/features/scoring/presentation/widgets/match_score_card.dart';
 import 'package:seek/features/scoring/presentation/widgets/score_input_sheet.dart';
 import 'package:seek/features/scoring/presentation/widgets/standings_table.dart';
+import 'package:seek/features/scoring/presentation/widgets/match_history_list.dart';
 
 class ScoringScreen extends ConsumerWidget {
   const ScoringScreen({super.key, required this.meetId});
@@ -35,6 +37,14 @@ class ScoringScreen extends ConsumerWidget {
             body: const Center(child: Text('Meet tidak ditemukan.')),
           );
         }
+        if (!isScoringSupported(meet.sport)) {
+          return Scaffold(
+            appBar: AppBar(title: const Text('Scoring')),
+            body: const Center(
+              child: Text('Scoring hanya tersedia untuk basket dan padel.'),
+            ),
+          );
+        }
         return _ScoringBody(meet: meet);
       },
     );
@@ -53,16 +63,21 @@ class _ScoringBody extends ConsumerWidget {
     final userId = ref.watch(currentUserIdProvider);
 
     final names = playerNamesFrom(members);
-    final canScore = userId != null &&
+    final canScore =
+        userId != null &&
         canEnterScore(userId: userId, meet: meet, clubMembers: members);
 
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: Text('Scoring - ${meet.title}'),
           bottom: const TabBar(
-            tabs: [Tab(text: 'Match'), Tab(text: 'Klasemen')],
+            tabs: [
+              Tab(text: 'Match'),
+              Tab(text: 'Klasemen'),
+              Tab(text: 'Riwayat'),
+            ],
           ),
         ),
         body: matchesAsync.when(
@@ -88,6 +103,7 @@ class _ScoringBody extends ConsumerWidget {
                   ],
                 ),
                 StandingsTable(matches: matches, playerNames: names),
+                MatchHistoryList(matches: matches, playerNames: names),
               ],
             );
           },
@@ -96,8 +112,12 @@ class _ScoringBody extends ConsumerWidget {
     );
   }
 
-  void _openSheet(BuildContext context, WidgetRef ref, GameMatch m,
-      Map<String, String> names) {
+  void _openSheet(
+    BuildContext context,
+    WidgetRef ref,
+    GameMatch m,
+    Map<String, String> names,
+  ) {
     showScoreInputSheet(
       context: context,
       match: m,
