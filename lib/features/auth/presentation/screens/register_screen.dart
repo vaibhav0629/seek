@@ -33,14 +33,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   String? _selectedSkill;
 
   bool _isLoading = false;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   void _showMessage(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
   Future<void> _register() async {
-    if (!_formKey.currentState!.validate()) return;
-
+    if (!_formKey.currentState!.validate()) {
+      setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
+      return;
+    }
     setState(() => _isLoading = true);
     try {
       await ref.read(authRepositoryProvider).signUp(
@@ -83,7 +86,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Form(
             key: _formKey,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
+            autovalidateMode: _autovalidateMode,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

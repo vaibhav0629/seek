@@ -23,13 +23,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _passwordController = TextEditingController();
 
   bool _isLoading = false;
+  AutovalidateMode _autovalidateMode = AutovalidateMode.disabled;
 
   void _showMessage(String text) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
   }
 
   Future<void> _login() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      setState(() => _autovalidateMode = AutovalidateMode.onUserInteraction);
+      return;
+    }
 
     setState(() => _isLoading = true);
     try {
@@ -62,7 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           padding: const EdgeInsets.all(24),
           child: Form(
             key: _formKey,
-            autovalidateMode: AutovalidateMode.onUserInteraction,
+            autovalidateMode: _autovalidateMode,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
