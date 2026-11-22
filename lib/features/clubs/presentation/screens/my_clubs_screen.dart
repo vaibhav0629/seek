@@ -5,6 +5,7 @@ import 'package:seek/app/router/app_routes.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/presentation/screens/club_card.dart';
 import 'package:seek/features/clubs/presentation/screens/club_empty_state.dart';
+import 'package:seek/features/clubs/presentation/screens/nearby_clubs_screen.dart';
 
 class MyClubsScreen extends ConsumerWidget {
   const MyClubsScreen({super.key});
@@ -15,7 +16,20 @@ class MyClubsScreen extends ConsumerWidget {
     final hasClubs = clubsAsync.asData?.value.isNotEmpty ?? false;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Clubs')),
+      appBar: AppBar(
+        title: const Text('My Clubs'),
+        actions: [
+          TextButton.icon(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const NearbyClubsScreen(),
+              ),
+            ),
+            icon: const Icon(Icons.near_me_outlined),
+            label: const Text('Near Me'),
+          ),
+        ],
+      ),
       // FAB hanya muncul kalau sudah punya club
       floatingActionButton: hasClubs
           ? FloatingActionButton.extended(
