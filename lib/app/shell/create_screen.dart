@@ -1,15 +1,18 @@
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:seek/app/router/app_routes.dart';
+import 'package:seek/features/meets/presentation/screens/meets_list_screen.dart';
 
-/// The "Create" tab: a small menu that opens the create flows.
 class CreateScreen extends StatelessWidget {
   const CreateScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Create')),
+      appBar: AppBar(
+        title: const Text('Create'),
+      ),
       body: ListView(
         children: [
           ListTile(
@@ -23,6 +26,21 @@ class CreateScreen extends StatelessWidget {
             title: const Text('New meet'),
             subtitle: const Text('Schedule a session for a club'),
             onTap: () => context.push(AppRoutes.newMeet),
+          ),
+          const Divider(),
+          ListTile(
+            leading: const Icon(Icons.event_available),
+            title: const Text('View Meets'),
+            subtitle: const Text('Browse all available meets'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const MeetsListScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),
