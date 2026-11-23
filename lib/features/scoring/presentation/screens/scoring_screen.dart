@@ -7,7 +7,7 @@ import 'package:seek/features/meets/domain/entities/meet.dart';
 import 'package:seek/features/scoring/data/match_providers.dart';
 import 'package:seek/features/scoring/domain/entities/game_match.dart';
 import 'package:seek/features/scoring/domain/score_permission.dart';
-import 'package:seek/features/scoring/domain/scoring_sports.dart';
+import 'package:seek/core/config/app_options.dart';
 import 'package:seek/features/scoring/presentation/widgets/match_score_card.dart';
 import 'package:seek/features/scoring/presentation/widgets/score_input_sheet.dart';
 import 'package:seek/features/scoring/presentation/widgets/standings_table.dart';
@@ -37,7 +37,7 @@ class ScoringScreen extends ConsumerWidget {
             body: const Center(child: Text('Meet tidak ditemukan.')),
           );
         }
-        if (!isScoringSupported(meet.sport)) {
+        if (!AppOptions.supportsScoring(meet.sport)) {
           return Scaffold(
             appBar: AppBar(title: const Text('Scoring')),
             body: const Center(
