@@ -15,7 +15,16 @@ class MyClubsScreen extends ConsumerWidget {
     final hasClubs = clubsAsync.asData?.value.isNotEmpty ?? false;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('My Clubs')),
+      appBar: AppBar(
+        title: const Text('My Clubs'),
+        actions: [
+          TextButton.icon(
+            onPressed: () => context.push(AppRoutes.nearbyClubs),
+            icon: const Icon(Icons.near_me_outlined),
+            label: const Text('Near Me'),
+          ),
+        ],
+      ),
       // FAB hanya muncul kalau sudah punya club
       floatingActionButton: hasClubs
           ? FloatingActionButton.extended(

@@ -12,6 +12,7 @@ import 'package:seek/features/chat/presentation/screens/chat_screen.dart';
 import 'package:seek/features/clubs/presentation/screens/club_detail_screen.dart';
 import 'package:seek/features/clubs/presentation/screens/create_club_screen.dart';
 import 'package:seek/features/clubs/presentation/screens/my_clubs_screen.dart';
+import 'package:seek/features/clubs/presentation/screens/nearby_clubs_screen.dart';
 import 'package:seek/features/competitions/presentation/screens/competition_screen.dart';
 import 'package:seek/features/discover/presentation/screens/discover_screen.dart';
 import 'package:seek/features/meets/presentation/screens/create_meet_screen.dart';
@@ -85,8 +86,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // Full-screen routes (open on top of the tabs).
-      // The "new" routes MUST stay above the ":id" routes, otherwise
-      // /clubs/new would be read as a club with the id "new".
+      // Static routes ("new", "nearby") MUST stay above the ":id" routes,
+      // otherwise those paths would be read as IDs.
+      GoRoute(
+        path: AppRoutes.nearbyClubs,
+        builder: (context, state) => const NearbyClubsScreen(),
+      ),
       GoRoute(
         path: AppRoutes.newClub,
         builder: (context, state) => const CreateClubScreen(),
