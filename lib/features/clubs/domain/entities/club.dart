@@ -10,6 +10,16 @@ class Club {
   final bool isPrivate;
   final int memberCount;
   final DateTime? createdAt;
+  final double? latitude;
+  final double? longitude;
+
+  bool get hasLocation =>
+      latitude != null &&
+      longitude != null &&
+      latitude!.isFinite &&
+      longitude!.isFinite &&
+      latitude!.abs() <= 90 &&
+      longitude!.abs() <= 180;
 
   const Club({
     required this.id,
@@ -21,28 +31,34 @@ class Club {
     this.isPrivate = false,
     this.memberCount = 1,
     this.createdAt,
+    this.latitude,
+    this.longitude,
   });
 
   factory Club.fromMap(Map<String, dynamic> map, String id) => Club(
-        id: id,
-        name: map['name'] as String? ?? '',
-        sport: map['sport'] as String? ?? '',
-        city: map['city'] as String? ?? '',
-        description: map['description'] as String? ?? '',
-        ownerId: map['ownerId'] as String? ?? '',
-        isPrivate: map['isPrivate'] as bool? ?? false,
-        memberCount: (map['memberCount'] as num?)?.toInt() ?? 0,
-        createdAt: dateFromFirestore(map['createdAt']),
-      );
+    id: id,
+    name: map['name'] as String? ?? '',
+    sport: map['sport'] as String? ?? '',
+    city: map['city'] as String? ?? '',
+    description: map['description'] as String? ?? '',
+    ownerId: map['ownerId'] as String? ?? '',
+    isPrivate: map['isPrivate'] as bool? ?? false,
+    memberCount: (map['memberCount'] as num?)?.toInt() ?? 0,
+    createdAt: dateFromFirestore(map['createdAt']),
+    latitude: (map['latitude'] as num?)?.toDouble(),
+    longitude: (map['longitude'] as num?)?.toDouble(),
+  );
 
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'sport': sport,
-        'city': city,
-        'description': description,
-        'ownerId': ownerId,
-        'isPrivate': isPrivate,
-        'memberCount': memberCount,
-        'createdAt': dateToFirestore(createdAt),
-      };
+    'name': name,
+    'sport': sport,
+    'city': city,
+    'description': description,
+    'ownerId': ownerId,
+    'isPrivate': isPrivate,
+    'memberCount': memberCount,
+    'createdAt': dateToFirestore(createdAt),
+    'latitude': latitude,
+    'longitude': longitude,
+  };
 }

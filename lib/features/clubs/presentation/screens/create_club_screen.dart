@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:seek/features/clubs/data/club_location_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:seek/app/router/app_routes.dart';
@@ -24,6 +26,30 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
   String? _city;
   bool _isPrivate = false;
   bool _saving = false;
+  bool _locating = false;
+  Position? _location;
+
+  Future<void> _captureLocation() async {
+    setState(() => _locating = true);
+    try {
+      final location = await ClubLocationService().locate();
+      if (mounted) setState(() => _location = location);
+    } catch (error) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              error is ClubLocationException
+                  ? error.message
+                  : 'Gagal mengambil lokasi. Coba lagi.',
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _locating = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -60,6 +86,8 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
         ownerId: userId,
         isPrivate: _isPrivate,
         createdAt: DateTime.now(),
+        latitude: _location?.latitude,
+        longitude: _location?.longitude,
       );
 
       final profile = await ref.read(currentUserProvider.future);
@@ -163,6 +191,26 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
               ),
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
+                title: const Text('Lokasi club untuk Near Me'),
+                subtitle: Text(
+                  _location == null
+                      ? 'Opsional. Aktifkan saat berada di tempat club berkumpul. Koordinat tempat ini akan digunakan untuk pencarian publik.'
+                      : 'Lokasi tersimpan: ${_location!.latitude.toStringAsFixed(5)}, ${_location!.longitude.toStringAsFixed(5)}',
+                ),
+                value: _location != null,
+                onChanged: _locating || _saving
+                    ? null
+                    : (enabled) {
+                        if (enabled) {
+                          _captureLocation();
+                        } else {
+                          setState(() => _location = null);
+                        }
+                      },
+              ),
+              if (_locating) const LinearProgressIndicator(),
+              SwitchListTile(
+                contentPadding: EdgeInsets.zero,
                 title: const Text('Club private'),
                 subtitle: const Text(
                   'Club private tidak muncul di halaman Discover',
@@ -172,7 +220,7 @@ class _CreateClubScreenState extends ConsumerState<CreateClubScreen> {
               ),
               const SizedBox(height: 16),
               FilledButton(
-                onPressed: _saving ? null : _submit,
+                onPressed: _saving || _locating ? null : _submit,
                 child: _saving
                     ? const SizedBox(
                         width: 20,

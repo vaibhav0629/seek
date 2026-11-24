@@ -180,5 +180,7 @@ class MockClubRepository implements ClubRepository {
     isPrivate: c.isPrivate,
     memberCount: memberCount ?? c.memberCount,
     createdAt: c.createdAt ?? DateTime.now(),
+    latitude: c.latitude,
+    longitude: c.longitude,
   );
 }

@@ -17,6 +17,9 @@ class AppRoutes {
   static const newClub = '/clubs/new';
   static const newMeet = '/meets/new';
 
+  // Club discovery
+  static const nearbyClubs = '/clubs/nearby';
+
   // Detail screens
   static String club(String clubId) => '/clubs/$clubId';
   static String clubChat(String clubId) => '/clubs/$clubId/chat';
