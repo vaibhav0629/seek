@@ -5,7 +5,6 @@ import 'package:seek/app/router/app_routes.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/presentation/screens/club_card.dart';
 import 'package:seek/features/clubs/presentation/screens/club_empty_state.dart';
-import 'package:seek/features/clubs/presentation/screens/nearby_clubs_screen.dart';
 
 class MyClubsScreen extends ConsumerWidget {
   const MyClubsScreen({super.key});
@@ -20,15 +19,7 @@ class MyClubsScreen extends ConsumerWidget {
         title: const Text('My Clubs'),
         actions: [
           TextButton.icon(
-<<<<<<< HEAD
-            onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const NearbyClubsScreen(),
-              ),
-            ),
-=======
             onPressed: () => context.push(AppRoutes.nearbyClubs),
->>>>>>> main
             icon: const Icon(Icons.near_me_outlined),
             label: const Text('Near Me'),
           ),

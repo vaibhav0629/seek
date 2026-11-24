@@ -203,13 +203,9 @@ class _NearbyClubsScreenState extends ConsumerState<NearbyClubsScreen> {
                   radiusKm: _radius,
                   query: _query,
                 );
-<<<<<<< HEAD
-                final missing = items.where((club) => !club.hasLocation).length;
-=======
                 final missing = items
                     .where((club) => !club.isPrivate && !club.hasLocation)
                     .length;
->>>>>>> main
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
