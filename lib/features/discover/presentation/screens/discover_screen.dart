@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:seek/features/clubs/data/club_providers.dart';
-import 'package:seek/core/config/app_options.dart';
-import 'package:seek/app/router/app_routes.dart';
 import 'package:go_router/go_router.dart';
-import 'package:seek/features/clubs/presentation/screens/sport_chip.dart';
+import 'package:seek/core/config/app_options.dart';
+import 'package:seek/features/clubs/data/club_providers.dart';
+import 'package:seek/features/clubs/domain/entities/club.dart';
+import 'package:seek/features/clubs/presentation/screens/club_card.dart';
+import 'package:seek/features/clubs/presentation/screens/club_empty_state.dart';
 
+/// Discover clubs using search and sport/city filters.
 class DiscoverScreen extends ConsumerStatefulWidget {
   const DiscoverScreen({super.key});
 
@@ -14,316 +16,121 @@ class DiscoverScreen extends ConsumerStatefulWidget {
 }
 
 class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
-  // SEEK COLOR PALETTE
-  static const Color background = Color(0xFF192C38);
-  static const Color surface = Color(0xFF06384D);
-  static const Color surface2 = Color(0xFF11617A);
-  static const Color primary = Color(0xFFF2FF38);
-  static const Color textSecondary = Color(0xFFA9C1CA);
-  static const Color border = Color(0xFF285365);
+  final _searchController = TextEditingController();
+  String? _selectedSport;
+  String? _selectedCity;
 
-  final TextEditingController searchController = TextEditingController();
-
-  String selectedSport = 'All';
-  String searchQuery = '';
-
-  final List<String> sportFilters = ['All', ...AppOptions.sports];
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() => setState(() {}));
+  }
 
   @override
   void dispose() {
-    searchController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
-  Widget sectionTitle(String title, String trailing) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 19,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        Text(
-          trailing,
-          style: const TextStyle(
-            color: primary,
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-        ),
-      ],
-    );
+  List<Club> _filterClubs(List<Club> clubs) {
+    final query = _searchController.text.trim().toLowerCase();
+    return clubs.where((club) {
+      final matchesQuery =
+          query.isEmpty ||
+          club.name.toLowerCase().contains(query) ||
+          club.sport.toLowerCase().contains(query) ||
+          club.city.toLowerCase().contains(query);
+      return matchesQuery &&
+          (_selectedSport == null || club.sport == _selectedSport) &&
+          (_selectedCity == null || club.city == _selectedCity);
+    }).toList();
   }
 
-  // HERO BANNER
-  Widget buildHeroBanner() {
-    return Container(
-      width: double.infinity,
-      height: 215,
-      padding: const EdgeInsets.all(22),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF06384D), Color(0xFF11617A), Color(0xFF192C38)],
-          begin: Alignment.bottomLeft,
-          end: Alignment.topRight,
-        ),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: border),
-      ),
-      child: Stack(
-        clipBehavior: Clip.hardEdge,
-        children: [
-          Positioned(
-            right: -20,
-            bottom: -25,
-            child: Icon(
-              Icons.sports_tennis_rounded,
-              size: 145,
-              color: Colors.white.withValues(alpha: 0.10),
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'FIND YOUR\nNEXT GAME.',
-                style: TextStyle(
-                  fontSize: 27,
-                  height: 1.15,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: 0.5,
+  void _clearFilters() => setState(() {
+    _searchController.clear();
+    _selectedSport = null;
+    _selectedCity = null;
+  });
+
+  Future<void> _showFilters(List<Club> clubs) async {
+    final sports = clubs.map((club) => club.sport).toSet().toList()..sort();
+    const cities = AppOptions.cities;
+    var sport = _selectedSport;
+    var city = _selectedCity;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 4, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  'Filter club',
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-              ),
-              const SizedBox(height: 9),
-              const Text(
-                'Discover sports, meet people,\nand play together.',
-                style: TextStyle(
-                  fontSize: 12,
-                  height: 1.4,
-                  color: textSecondary,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 15,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: primary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Text(
-                  'Explore Now  →',
-                  style: TextStyle(
-                    color: background,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 12,
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String?>(
+                  initialValue: sport,
+                  decoration: const InputDecoration(
+                    labelText: 'Olahraga',
+                    border: OutlineInputBorder(),
                   ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  // SEARCH BAR
-  Widget buildSearchBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: border),
-      ),
-      child: TextField(
-        controller: searchController,
-        style: const TextStyle(color: Colors.white),
-        onChanged: (value) {
-          setState(() {
-            searchQuery = value;
-          });
-        },
-        decoration: const InputDecoration(
-          hintText: 'Search clubs or sports...',
-          hintStyle: TextStyle(color: textSecondary, fontSize: 13),
-          prefixIcon: Icon(Icons.search_rounded, color: primary),
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.symmetric(vertical: 16),
-        ),
-      ),
-    );
-  }
-
-  // POPULAR SPORTS
-  Widget buildSportsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        sectionTitle('Popular Sports', 'Explore'),
-        const SizedBox(height: 17),
-        SizedBox(
-          height: 95,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: sportFilters.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 15),
-            itemBuilder: (context, index) {
-              final name = sportFilters[index];
-              final icon = name == 'All'
-                  ? Icons.grid_view_rounded
-                  : SportStyle.of(name).icon;
-
-              final isSelected = selectedSport == name;
-
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    selectedSport = name;
-                  });
-                },
-                child: SizedBox(
-                  width: 65,
-                  child: Column(
-                    children: [
-                      AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: 55,
-                        height: 55,
-                        decoration: BoxDecoration(
-                          color: isSelected ? primary : surface2,
-                          borderRadius: BorderRadius.circular(18),
-                          border: Border.all(
-                            color: isSelected ? primary : border,
-                          ),
-                        ),
-                        child: Icon(
-                          icon,
-                          color: isSelected ? background : Colors.white,
-                          size: 26,
-                        ),
-                      ),
-                      const SizedBox(height: 7),
-                      Text(
-                        name,
-                        style: TextStyle(
-                          color: isSelected ? primary : textSecondary,
-                          fontSize: 10,
-                          fontWeight: isSelected
-                              ? FontWeight.bold
-                              : FontWeight.normal,
-                        ),
-                        textAlign: TextAlign.center,
-                        maxLines: 1,
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  // COMMUNITY CARD
-
-  Widget buildClubCard(dynamic club) {
-    return GestureDetector(
-      onTap: () => context.push(AppRoutes.club(club.id)),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(15),
-        decoration: BoxDecoration(
-          color: surface,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: border),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 60,
-              height: 60,
-              decoration: BoxDecoration(
-                color: surface2,
-                borderRadius: BorderRadius.circular(17),
-              ),
-              child: Icon(
-                SportStyle.of(club.sport).icon,
-                color: primary,
-                size: 30,
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    club.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('Semua olahraga'),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    club.sport,
-                    style: const TextStyle(color: primary, fontSize: 12),
-                  ),
-                  const SizedBox(height: 5),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.location_on_outlined,
-                        color: textSecondary,
-                        size: 14,
+                    ...sports.map(
+                      (value) => DropdownMenuItem<String?>(
+                        value: value,
+                        child: Text(value),
                       ),
-                      const SizedBox(width: 4),
-                      Expanded(
-                        child: Text(
-                          club.city,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            color: textSecondary,
-                            fontSize: 11,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(width: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-              decoration: BoxDecoration(
-                color: primary,
-                borderRadius: BorderRadius.circular(22),
-              ),
-              child: const Text(
-                'Explore',
-                style: TextStyle(
-                  color: background,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
+                    ),
+                  ],
+                  onChanged: (value) => setSheetState(() => sport = value),
                 ),
-              ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String?>(
+                  initialValue: city,
+                  decoration: const InputDecoration(
+                    labelText: 'Kota',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: [
+                    const DropdownMenuItem<String?>(
+                      value: null,
+                      child: Text('Semua kota'),
+                    ),
+                    ...cities.map(
+                      (value) => DropdownMenuItem<String?>(
+                        value: value,
+                        child: Text(value),
+                      ),
+                    ),
+                  ],
+                  onChanged: (value) => setSheetState(() => city = value),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton(
+                    onPressed: () {
+                      setState(() {
+                        _selectedSport = sport;
+                        _selectedCity = city;
+                      });
+                      Navigator.pop(context);
+                    },
+                    child: const Text('Terapkan filter'),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -331,168 +138,101 @@ class _DiscoverScreenState extends ConsumerState<DiscoverScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final clubs = ref.watch(clubsProvider);
-
+    final clubsAsync = ref.watch(clubsProvider);
     return Scaffold(
-      backgroundColor: background,
-      body: SafeArea(
-        child: clubs.when(
-          data: (list) {
-            final filteredClubs = list.where((club) {
-              final matchesSport =
-                  selectedSport == 'All' ||
-                  club.sport.toLowerCase() == selectedSport.toLowerCase();
-
-              final matchesSearch =
-                  club.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
-                  club.sport.toLowerCase().contains(
-                    searchQuery.toLowerCase(),
-                  ) ||
-                  club.city.toLowerCase().contains(searchQuery.toLowerCase());
-
-              return matchesSport && matchesSearch;
-            }).toList();
-
-            return CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // HEADER
-                        Row(
-                          children: [
-                            Container(
-                              width: 42,
-                              height: 42,
-                              decoration: BoxDecoration(
-                                color: primary,
-                                borderRadius: BorderRadius.circular(13),
-                              ),
-                              child: const Icon(
-                                Icons.explore_rounded,
-                                color: background,
-                                size: 26,
-                              ),
-                            ),
-                            const SizedBox(width: 11),
-                            const Text(
-                              'SEEK',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 25,
-                                fontWeight: FontWeight.w900,
-                                letterSpacing: 1.5,
-                              ),
-                            ),
-                            const Spacer(),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: surface,
-                                borderRadius: BorderRadius.circular(14),
-                                border: Border.all(color: border),
-                              ),
-                              child: IconButton(
-                                onPressed: () {},
-                                icon: const Icon(
-                                  Icons.notifications_none_rounded,
-                                  color: Colors.white,
-                                  size: 25,
+      appBar: AppBar(
+        title: const Text('Discover'),
+        actions: [
+          IconButton(
+            tooltip: 'Buat club',
+            onPressed: () => context.push('/clubs/create'),
+            icon: const Icon(Icons.add),
+          ),
+        ],
+      ),
+      body: clubsAsync.when(
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (_, _) => const Center(child: Text('Gagal memuat club')),
+        data: (clubs) {
+          final filtered = _filterClubs(clubs);
+          final hasFilter =
+              _searchController.text.trim().isNotEmpty ||
+              _selectedSport != null ||
+              _selectedCity != null;
+          return Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        decoration: InputDecoration(
+                          hintText: 'Cari club, olahraga, atau kota',
+                          prefixIcon: const Icon(Icons.search),
+                          suffixIcon: _searchController.text.isEmpty
+                              ? null
+                              : IconButton(
+                                  onPressed: () => _searchController.clear(),
+                                  icon: const Icon(Icons.clear),
                                 ),
-                              ),
-                            ),
-                          ],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                         ),
-
-                        const SizedBox(height: 25),
-
-                        buildHeroBanner(),
-
-                        const SizedBox(height: 22),
-
-                        buildSearchBar(),
-
-                        const SizedBox(height: 27),
-
-                        buildSportsSection(),
-
-                        const SizedBox(height: 27),
-
-                        sectionTitle(
-                          'Explore Communities',
-                          '${filteredClubs.length} clubs',
-                        ),
-
-                        const SizedBox(height: 15),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // COMMUNITY LIST
-                if (filteredClubs.isEmpty)
-                  const SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.search_off_rounded,
-                            size: 45,
-                            color: primary,
-                          ),
-                          SizedBox(height: 12),
-                          Text(
-                            'No communities found',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          Text(
-                            'Try another sport or keyword.',
-                            style: TextStyle(
-                              color: textSecondary,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
                       ),
                     ),
-                  )
-                else
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 25),
-                    sliver: SliverList(
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        return buildClubCard(filteredClubs[index]);
-                      }, childCount: filteredClubs.length),
+                    const SizedBox(width: 8),
+                    IconButton.filledTonal(
+                      tooltip: 'Filter',
+                      onPressed: clubs.isEmpty
+                          ? null
+                          : () => _showFilters(clubs),
+                      icon: Badge(
+                        isLabelVisible:
+                            _selectedSport != null || _selectedCity != null,
+                        child: const Icon(Icons.tune),
+                      ),
                     ),
-                  ),
-              ],
-            );
-          },
-
-          // LOADING
-          loading: () =>
-              const Center(child: CircularProgressIndicator(color: primary)),
-
-          // ERROR
-          error: (error, _) => Center(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Text(
-                'Something went wrong: $error',
-                style: const TextStyle(color: Colors.white),
+                  ],
+                ),
               ),
-            ),
-          ),
-        ),
+              if (hasFilter)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: _clearFilters,
+                    icon: const Icon(Icons.filter_alt_off, size: 18),
+                    label: const Text('Hapus pencarian/filter'),
+                  ),
+                ),
+              Expanded(
+                child: filtered.isEmpty
+                    ? ClubEmptyState(
+                        message: hasFilter
+                            ? 'Club yang sesuai tidak ditemukan'
+                            : 'Belum ada club publik',
+                        actionLabel: hasFilter ? 'Hapus filter' : 'Buat Club',
+                        onAction: hasFilter
+                            ? _clearFilters
+                            : () => context.push('/clubs/create'),
+                      )
+                    : ListView.builder(
+                        padding: const EdgeInsets.only(top: 4, bottom: 24),
+                        itemCount: filtered.length,
+                        itemBuilder: (context, index) {
+                          final club = filtered[index];
+                          return ClubCard(
+                            club: club,
+                            onTap: () => context.push('/clubs/${club.id}'),
+                          );
+                        },
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

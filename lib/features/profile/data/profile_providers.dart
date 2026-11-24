@@ -1,13 +1,18 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seek/features/auth/data/auth_providers.dart';
+import 'package:seek/features/auth/data/mock_auth_repository.dart';
+import 'package:seek/features/profile/data/firestore_user_repository.dart';
 import 'package:seek/features/profile/data/mock_user_repository.dart';
 import 'package:seek/features/profile/domain/entities/app_user.dart';
 import 'package:seek/features/profile/domain/repositories/user_repository.dart';
 
 /// To switch to Firebase, return FirestoreUserRepository() here instead.
-final userRepositoryProvider = Provider<UserRepository>(
-  (ref) => MockUserRepository(),
-);
+final userRepositoryProvider = Provider<UserRepository>((ref) {
+  final auth = ref.watch(authRepositoryProvider);
+  return auth is MockAuthRepository
+      ? MockUserRepository()
+      : FirestoreUserRepository();
+});
 
 /// Any user's profile, by id.
 final userProvider = StreamProvider.family<AppUser?, String>(
