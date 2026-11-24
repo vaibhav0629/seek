@@ -1,3 +1,4 @@
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +18,7 @@ import 'package:seek/features/competitions/presentation/screens/competition_scre
 import 'package:seek/features/discover/presentation/screens/discover_screen.dart';
 import 'package:seek/features/meets/presentation/screens/create_meet_screen.dart';
 import 'package:seek/features/meets/presentation/screens/meet_detail_screen.dart';
+import 'package:seek/features/meets/presentation/screens/meets_list_screen.dart';
 import 'package:seek/features/payments/presentation/screens/payments_screen.dart';
 import 'package:seek/features/profile/presentation/screens/profile_screen.dart';
 import 'package:seek/features/scoring/presentation/screens/scoring_screen.dart';
@@ -36,11 +38,14 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       if (kBypassAuth) return null;
       final loggedIn = FirebaseAuth.instance.currentUser != null;
+
       // Login and register are the only screens a logged-out user may see.
       final onAuthPage = state.matchedLocation == AppRoutes.login ||
           state.matchedLocation == AppRoutes.register;
+
       if (!loggedIn && !onAuthPage) return AppRoutes.login;
       if (loggedIn && onAuthPage) return AppRoutes.discover;
+
       return null;
     },
     routes: [
@@ -86,8 +91,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
 
       // Full-screen routes (open on top of the tabs).
-      // Static routes ("new", "nearby") MUST stay above the ":id" routes,
-      // otherwise those paths would be read as IDs.
+      // Static routes MUST stay above the dynamic ID routes.
       GoRoute(
         path: AppRoutes.nearbyClubs,
         builder: (context, state) => const NearbyClubsScreen(),
@@ -95,6 +99,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.newClub,
         builder: (context, state) => const CreateClubScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.meetsList,
+        builder: (context, state) => const MeetsListScreen(),
       ),
       GoRoute(
         path: AppRoutes.newMeet,
