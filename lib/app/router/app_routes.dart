@@ -1,3 +1,4 @@
+
 /// Every path in the app lives here. Use these instead of typing strings.
 ///
 ///   context.go(AppRoutes.discover);          // switch tab / replace screen
@@ -16,6 +17,9 @@ class AppRoutes {
   // Create flows
   static const newClub = '/clubs/new';
   static const newMeet = '/meets/new';
+
+  // Meets list
+  static const meetsList = '/meets';
 
   // Club discovery
   static const nearbyClubs = '/clubs/nearby';

@@ -2,7 +2,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:seek/app/router/app_routes.dart';
-import 'package:seek/features/meets/presentation/screens/meets_list_screen.dart';
 
 class CreateScreen extends StatelessWidget {
   const CreateScreen({super.key});
@@ -33,14 +32,7 @@ class CreateScreen extends StatelessWidget {
             title: const Text('View Meets'),
             subtitle: const Text('Browse all available meets'),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const MeetsListScreen(),
-                ),
-              );
-            },
+            onTap: () => context.push(AppRoutes.meetsList),
           ),
         ],
       ),
