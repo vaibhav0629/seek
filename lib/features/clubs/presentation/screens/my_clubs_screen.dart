@@ -20,11 +20,15 @@ class MyClubsScreen extends ConsumerWidget {
         title: const Text('My Clubs'),
         actions: [
           TextButton.icon(
+<<<<<<< HEAD
             onPressed: () => Navigator.of(context).push(
               MaterialPageRoute<void>(
                 builder: (_) => const NearbyClubsScreen(),
               ),
             ),
+=======
+            onPressed: () => context.push(AppRoutes.nearbyClubs),
+>>>>>>> main
             icon: const Icon(Icons.near_me_outlined),
             label: const Text('Near Me'),
           ),
