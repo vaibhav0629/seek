@@ -10,17 +10,20 @@ class MatchScoreCard extends StatelessWidget {
     required this.match,
     required this.playerNames,
     this.onTap,
+    this.compact = false,
   });
 
   final GameMatch match;
   final Map<String, String> playerNames;
   final VoidCallback? onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final winner = match.winner;
     final finished = match.status == MatchStatus.finished;
 
+    final spacing = compact ? 6.0 : 4.0;
     Widget teamRow(List<String> ids, int? score, bool isWinner) => Row(
       children: [
         Expanded(
@@ -29,6 +32,8 @@ class MatchScoreCard extends StatelessWidget {
             style: TextStyle(
               fontWeight: isWinner ? FontWeight.bold : FontWeight.normal,
             ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: compact ? 1 : null,
           ),
         ),
         Text(
@@ -41,7 +46,10 @@ class MatchScoreCard extends StatelessWidget {
     );
 
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      margin: EdgeInsets.symmetric(
+        horizontal: compact ? 4 : 16,
+        vertical: 6,
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -52,20 +60,27 @@ class MatchScoreCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Text(
-                    'Round ${match.round} - Match ${match.position}',
-                    style: Theme.of(context).textTheme.labelMedium,
+                  Expanded(
+                    child: Text(
+                      compact
+                          ? 'M${match.position}'
+                          : 'Round ${match.round} - Match ${match.position}${match.court != null ? '  |  Court ${match.court}' : ''}',
+                      style: Theme.of(context).textTheme.labelMedium,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  if (match.court != null) Text('  |  Court ${match.court}'),
-                  const Spacer(),
                   Chip(
                     label: Text(_statusText(match.status)),
                     visualDensity: VisualDensity.compact,
+                    padding: compact ? EdgeInsets.zero : null,
+                    materialTapTargetSize: compact
+                        ? MaterialTapTargetSize.shrinkWrap
+                        : null,
                   ),
                 ],
               ),
               teamRow(match.teamA, match.scoreA, winner == TeamSide.a),
-              const SizedBox(height: 4),
+              SizedBox(height: spacing),
               teamRow(match.teamB, match.scoreB, winner == TeamSide.b),
               if (finished && winner == null)
                 const Padding(

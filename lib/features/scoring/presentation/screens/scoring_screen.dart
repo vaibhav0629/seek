@@ -2,15 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seek/features/auth/data/auth_providers.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
+import 'package:seek/features/clubs/domain/entities/club_member.dart';
+import 'package:seek/features/meets/data/meet_permissions.dart';
 import 'package:seek/features/meets/data/meet_providers.dart';
 import 'package:seek/features/meets/domain/entities/meet.dart';
+import 'package:seek/features/meets/domain/entities/rsvp.dart';
 import 'package:seek/features/scoring/data/match_providers.dart';
 import 'package:seek/features/scoring/domain/entities/game_match.dart';
+import 'package:seek/core/config/app_options.dart';
 import 'package:seek/features/scoring/domain/score_permission.dart';
-import 'package:seek/features/scoring/domain/scoring_sports.dart';
 import 'package:seek/features/scoring/presentation/widgets/match_score_card.dart';
 import 'package:seek/features/scoring/presentation/widgets/score_input_sheet.dart';
 import 'package:seek/features/scoring/presentation/widgets/standings_table.dart';
+import 'package:seek/features/scoring/presentation/widgets/generate_schedule_button.dart';
 import 'package:seek/features/scoring/presentation/widgets/match_history_list.dart';
 
 class ScoringScreen extends ConsumerWidget {
@@ -37,7 +41,7 @@ class ScoringScreen extends ConsumerWidget {
             body: const Center(child: Text('Meet tidak ditemukan.')),
           );
         }
-        if (!isScoringSupported(meet.sport)) {
+        if (!AppOptions.supportsScoring(meet.sport)) {
           return Scaffold(
             appBar: AppBar(title: const Text('Scoring')),
             body: const Center(
@@ -59,10 +63,12 @@ class _ScoringBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final matchesAsync = ref.watch(meetMatchesProvider(meet.id));
+    final rsvpsAsync = ref.watch(rsvpsProvider(meet.id));
     final members = ref.watch(clubMembersProvider(meet.clubId)).value ?? [];
     final userId = ref.watch(currentUserIdProvider);
+    final canManage = ref.watch(canManageMeetProvider(meet.id));
 
-    final names = playerNamesFrom(members);
+    final names = _playerNames(members, rsvpsAsync.value ?? const []);
     final canScore =
         userId != null &&
         canEnterScore(userId: userId, meet: meet, clubMembers: members);
@@ -85,7 +91,11 @@ class _ScoringBody extends ConsumerWidget {
           error: (e, _) => Center(child: Text('Error: $e')),
           data: (matches) {
             if (matches.isEmpty) {
-              return const Center(child: Text('Belum ada jadwal match.'));
+              return _EmptySchedule(
+                meet: meet,
+                canManage: canManage,
+                rsvpsAsync: rsvpsAsync,
+              );
             }
             return TabBarView(
               children: [
@@ -121,10 +131,77 @@ class _ScoringBody extends ConsumerWidget {
     showScoreInputSheet(
       context: context,
       match: m,
+      sport: meet.sport,
       playerNames: names,
       onSubmit: (a, b) => ref
           .read(matchRepositoryProvider)
           .updateScore(matchId: m.id, scoreA: a, scoreB: b),
+    );
+  }
+}
+
+Map<String, String> _playerNames(
+  List<ClubMember> members,
+  List<Rsvp> rsvps,
+) {
+  final names = playerNamesFrom(members);
+  for (final r in rsvps) {
+    names[r.userId] = r.userName;
+  }
+  return names;
+}
+
+class _EmptySchedule extends StatelessWidget {
+  const _EmptySchedule({
+    required this.meet,
+    required this.canManage,
+    required this.rsvpsAsync,
+  });
+
+  final Meet meet;
+  final bool canManage;
+  final AsyncValue<List<Rsvp>> rsvpsAsync;
+
+  @override
+  Widget build(BuildContext context) {
+    return rsvpsAsync.when(
+      loading: () => const Center(child: CircularProgressIndicator()),
+      error: (e, _) => Center(child: Text('Error RSVP: $e')),
+      data: (rsvps) {
+        final going =
+            rsvps.where((r) => r.status == RsvpStatus.going).length;
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Belum ada jadwal match.'),
+                const SizedBox(height: 8),
+                Text(
+                  '$going peserta going',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                if (canManage) ...[
+                  const SizedBox(height: 24),
+                  GenerateScheduleButton(
+                    meetId: meet.id,
+                    sport: meet.sport,
+                    rsvps: rsvps,
+                  ),
+                ] else
+                  const Padding(
+                    padding: EdgeInsets.only(top: 16),
+                    child: Text(
+                      'Hanya pembuat meet atau admin klub yang bisa membuat jadwal.',
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

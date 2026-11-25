@@ -6,6 +6,7 @@ import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/presentation/screens/club_header.dart';
 import 'package:seek/features/clubs/presentation/screens/club_members_list.dart';
 import 'package:seek/features/clubs/presentation/screens/join_club_button.dart';
+import 'package:seek/features/competitions/presentation/widgets/club_competitions_section.dart';
 
 class ClubDetailScreen extends ConsumerWidget {
   final String clubId;
@@ -48,6 +49,7 @@ class ClubDetailScreen extends ConsumerWidget {
           body: Column(
             children: [
               ClubHeader(club: club, action: JoinClubButton(club: club)),
+              ClubCompetitionsSection(clubId: club.id),
               const Padding(
                 padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
                 child: Align(
