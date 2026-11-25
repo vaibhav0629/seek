@@ -33,43 +33,63 @@ class BracketView extends StatelessWidget {
     final rounds = byRound.keys.toList()..sort();
     final total = rounds.length;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.all(8),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          for (final r in rounds)
-            SizedBox(
-              width: 260,
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      _roundTitle(r, total),
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        const horizontalPadding = 12.0;
+        const minColumnWidth = 156.0;
+        const maxColumnWidth = 260.0;
+        final available = constraints.maxWidth - horizontalPadding * 2;
+        final fitted = available / total;
+        final columnWidth = fitted.clamp(minColumnWidth, maxColumnWidth);
+        final contentWidth = columnWidth * total;
+        final scrollable = contentWidth > available + 1;
+
+        return SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: scrollable
+              ? const BouncingScrollPhysics()
+              : const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(
+            horizontal: horizontalPadding,
+            vertical: 8,
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              for (final r in rounds)
+                SizedBox(
+                  width: columnWidth,
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          _roundTitle(r, total),
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ),
+                      for (final m
+                          in (byRound[r]!
+                            ..sort((a, b) => a.position.compareTo(b.position))))
+                        MatchScoreCard(
+                          match: m,
+                          playerNames: playerNames,
+                          compact: true,
+                          onTap:
+                              (onMatchTap != null &&
+                                  m.teamA.isNotEmpty &&
+                                  m.teamB.isNotEmpty &&
+                                  m.status != MatchStatus.finished)
+                              ? () => onMatchTap!(m)
+                              : null,
+                        ),
+                    ],
                   ),
-                  for (final m
-                      in (byRound[r]!
-                        ..sort((a, b) => a.position.compareTo(b.position))))
-                    MatchScoreCard(
-                      match: m,
-                      playerNames: playerNames,
-                      onTap:
-                          (onMatchTap != null &&
-                              m.teamA.isNotEmpty &&
-                              m.teamB.isNotEmpty &&
-                              m.status != MatchStatus.finished)
-                          ? () => onMatchTap!(m)
-                          : null,
-                    ),
-                ],
-              ),
-            ),
-        ],
-      ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
