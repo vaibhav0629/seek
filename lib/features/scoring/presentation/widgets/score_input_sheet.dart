@@ -7,6 +7,7 @@ Future<void> showScoreInputSheet({
   required GameMatch match,
   required Map<String, String> playerNames,
   required Future<void> Function(int scoreA, int scoreB) onSubmit,
+  String? sport,
 }) {
   return showModalBottomSheet(
     context: context,
@@ -17,6 +18,7 @@ Future<void> showScoreInputSheet({
       ),
       child: ScoreInputSheet(
         match: match,
+        sport: sport,
         playerNames: playerNames,
         onSubmit: onSubmit,
       ),
@@ -28,11 +30,13 @@ class ScoreInputSheet extends StatefulWidget {
   const ScoreInputSheet({
     super.key,
     required this.match,
+    this.sport,
     required this.playerNames,
     required this.onSubmit,
   });
 
   final GameMatch match;
+  final String? sport;
   final Map<String, String> playerNames;
   final Future<void> Function(int scoreA, int scoreB) onSubmit;
 
@@ -48,6 +52,12 @@ class _ScoreInputSheetState extends State<ScoreInputSheet> {
   // Match turnamen harus ada pemenang, round robin boleh seri.
   bool get _isTournament => widget.match.competitionId != null;
   bool get _drawNotAllowed => _isTournament && _a == _b;
+  bool get _isPadel =>
+      widget.sport?.trim().toLowerCase() == 'padel' && !_isTournament;
+  int get _maxSetsWon => 3;
+
+  void _setScoreA(int value) => setState(() => _a = value.clamp(0, _maxSetsWon));
+  void _setScoreB(int value) => setState(() => _b = value.clamp(0, _maxSetsWon));
 
   Widget _counter(String label, int value, ValueChanged<int> onChanged) {
     return Expanded(
@@ -96,6 +106,15 @@ class _ScoreInputSheetState extends State<ScoreInputSheet> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('Input skor', style: Theme.of(context).textTheme.titleMedium),
+            if (_isPadel)
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  'Padel: isi jumlah set yang dimenangkan (0–$_maxSetsWon).',
+                  style: Theme.of(context).textTheme.bodySmall,
+                  textAlign: TextAlign.center,
+                ),
+              ),
             const SizedBox(height: 16),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,12 +122,12 @@ class _ScoreInputSheetState extends State<ScoreInputSheet> {
                 _counter(
                   teamLabel(widget.match.teamA, widget.playerNames),
                   _a,
-                  (v) => setState(() => _a = v),
+                  _isPadel ? _setScoreA : (v) => setState(() => _a = v),
                 ),
                 _counter(
                   teamLabel(widget.match.teamB, widget.playerNames),
                   _b,
-                  (v) => setState(() => _b = v),
+                  _isPadel ? _setScoreB : (v) => setState(() => _b = v),
                 ),
               ],
             ),
