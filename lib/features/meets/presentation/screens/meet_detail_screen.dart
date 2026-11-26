@@ -1,11 +1,15 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:seek/core/mock/mock_data.dart';
+import 'package:seek/app/router/app_routes.dart';
 import 'package:seek/features/auth/data/auth_providers.dart';
+import 'package:seek/features/clubs/data/club_providers.dart';
+import 'package:seek/features/clubs/domain/entities/club_member.dart';
 import 'package:seek/features/meets/data/meet_providers.dart';
 import 'package:seek/features/meets/domain/entities/meet.dart';
 import 'package:seek/features/meets/domain/entities/rsvp.dart';
+import 'package:seek/features/profile/data/profile_providers.dart';
 
 class MeetDetailScreen extends ConsumerWidget {
   const MeetDetailScreen({super.key, required this.meetId});
@@ -32,8 +36,8 @@ class MeetDetailScreen extends ConsumerWidget {
     final myRsvpAsync = ref.watch(myRsvpProvider(meetId));
 
     final userId = ref.watch(currentUserIdProvider);
-    final user = mockUsers.where((u) => u.id == userId).firstOrNull;
-    final userName = user?.displayName ?? 'User';
+    final currentUserAsync = ref.watch(currentUserProvider);
+    final userName = currentUserAsync.value?.displayName ?? 'User';
 
     return Scaffold(
       appBar: AppBar(
@@ -44,7 +48,7 @@ class MeetDetailScreen extends ConsumerWidget {
             if (context.canPop()) {
               context.pop();
             } else {
-              context.go('/discover');
+              context.go(AppRoutes.discover);
             }
           },
         ),
@@ -57,11 +61,15 @@ class MeetDetailScreen extends ConsumerWidget {
             return const Center(child: Text('Meet not found.'));
           }
 
-          final isClubAdmin = mockClubMembers.any(
-            (item) =>
-                item.clubId == meet.clubId &&
-                item.member.userId == userId &&
-                item.member.role.name == 'admin',
+          final clubAsync = ref.watch(clubProvider(meet.clubId));
+          final membersAsync = ref.watch(clubMembersProvider(meet.clubId));
+
+          final club = clubAsync.value;
+          final members = membersAsync.value ?? [];
+
+          final isClubAdmin = members.any(
+            (member) =>
+                member.userId == userId && member.role == ClubRole.admin,
           );
 
           final canManage =
@@ -72,7 +80,8 @@ class MeetDetailScreen extends ConsumerWidget {
             error: (error, stack) => Center(child: Text('Error: $error')),
             data: (rsvps) {
               return myRsvpAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator()),
+                loading: () =>
+                    const Center(child: CircularProgressIndicator()),
                 error: (error, stack) => Center(child: Text('Error: $error')),
                 data: (myRsvp) {
                   final repository = ref.read(meetRepositoryProvider);
@@ -90,7 +99,11 @@ class MeetDetailScreen extends ConsumerWidget {
                       Chip(label: Text(meet.sport)),
                       const SizedBox(height: 12),
 
-                      _infoRow(Icons.groups, 'Club', _clubName(meet.clubId)),
+                      _infoRow(
+                        Icons.groups,
+                        'Club',
+                        club?.name ?? 'Loading club...',
+                      ),
                       _infoRow(Icons.location_on, 'Venue', meet.venueName),
                       _infoRow(
                         Icons.calendar_month,
@@ -128,6 +141,38 @@ class MeetDetailScreen extends ConsumerWidget {
                         const SizedBox(height: 8),
                         Text(meet.description),
                       ],
+
+                      const SizedBox(height: 24),
+
+                      // Navigation to Scoring and Payments.
+                      Text(
+                        'Meet Tools',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                context.push(AppRoutes.meetScoring(meetId));
+                              },
+                              icon: const Icon(Icons.scoreboard),
+                              label: const Text('Scoring'),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                context.push(AppRoutes.meetPayments(meetId));
+                              },
+                              icon: const Icon(Icons.payments),
+                              label: const Text('Payments'),
+                            ),
+                          ),
+                        ],
+                      ),
 
                       const SizedBox(height: 24),
 
@@ -212,11 +257,6 @@ class MeetDetailScreen extends ConsumerWidget {
         },
       ),
     );
-  }
-
-  String _clubName(String clubId) {
-    return mockClubs.where((club) => club.id == clubId).firstOrNull?.name ??
-        'Unknown club';
   }
 
   Widget _infoRow(IconData icon, String label, String value) {

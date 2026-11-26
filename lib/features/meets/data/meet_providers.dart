@@ -1,7 +1,8 @@
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:seek/features/auth/data/auth_providers.dart';
 import 'package:seek/features/meets/data/firestore_meet_alert_repository.dart';
-import 'package:seek/features/meets/data/mock_meet_repository.dart';
+import 'package:seek/features/meets/data/firestore_meet_repository.dart';
 import 'package:seek/features/meets/domain/entities/meet.dart';
 import 'package:seek/features/meets/domain/entities/meet_alert.dart';
 import 'package:seek/features/meets/domain/entities/rsvp.dart';
@@ -12,9 +13,8 @@ final meetAlertRepositoryProvider = Provider<MeetAlertRepository>(
   (ref) => FirestoreMeetAlertRepository(),
 );
 
-// Temporary mock repository while developing Meets UI.
 final meetRepositoryProvider = Provider<MeetRepository>((ref) {
-  return MockMeetRepository();
+  return FirestoreMeetRepository();
 });
 
 final meetsProvider = StreamProvider<List<Meet>>(
@@ -22,7 +22,9 @@ final meetsProvider = StreamProvider<List<Meet>>(
 );
 
 final clubMeetsProvider = StreamProvider.family<List<Meet>, String>(
-  (ref, clubId) => ref.watch(meetRepositoryProvider).watchMeets(clubId: clubId),
+  (ref, clubId) => ref.watch(meetRepositoryProvider).watchMeets(
+    clubId: clubId,
+  ),
 );
 
 final meetProvider = StreamProvider.family<Meet?, String>(
