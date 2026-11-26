@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:seek/features/meets/data/meet_providers.dart';
 import 'package:seek/features/meets/domain/entities/meet.dart';
+import 'package:seek/app/router/app_routes.dart';
 
 class MeetsListScreen extends ConsumerWidget {
   const MeetsListScreen({super.key});
@@ -77,7 +78,7 @@ class _MeetCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          context.push('/meets/${meet.id}');
+          context.push(AppRoutes.meet(meet.id));
         },
         child: Padding(
           padding: const EdgeInsets.all(16),
