@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:seek/features/scoring/domain/entities/game_match.dart';
 import 'package:seek/features/scoring/presentation/widgets/match_score_card.dart';
 
-/// Bagan babak gugur: satu kolom per round, bisa digeser ke samping.
+
 class BracketView extends StatelessWidget {
   const BracketView({
     super.key,

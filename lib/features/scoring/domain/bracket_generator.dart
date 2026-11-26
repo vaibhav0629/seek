@@ -136,6 +136,7 @@ List<GameMatch> applyBracketByeAdvances(List<GameMatch> matches) {
     for (var i = 0; i < matches.length; i++) {
       final m = matches[i];
       if (m.status == MatchStatus.finished) continue;
+      if (m.round != 1) continue;
 
       final hasA = m.teamA.isNotEmpty;
       final hasB = m.teamB.isNotEmpty;
