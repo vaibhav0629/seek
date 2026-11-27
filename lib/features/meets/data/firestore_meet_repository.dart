@@ -1,6 +1,7 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:seek/features/meets/domain/entities/meet.dart';
+import 'package:seek/features/payments/domain/entities/payment.dart';
 import 'package:seek/features/meets/domain/entities/rsvp.dart';
 import 'package:seek/features/meets/domain/repositories/meet_repository.dart';
 
@@ -103,10 +104,12 @@ class FirestoreMeetRepository implements MeetRepository {
   }) async {
     final meetRef = _meets.doc(meetId);
     final rsvpRef = _rsvps(meetId).doc(userId);
+    final paymentRef = _db.collection('payments').doc('${meetId}_$userId');
 
     return _db.runTransaction<RsvpStatus>((transaction) async {
       final meetSnapshot = await transaction.get(meetRef);
       final rsvpSnapshot = await transaction.get(rsvpRef);
+      final paymentSnapshot = await transaction.get(paymentRef);
 
       if (!meetSnapshot.exists) {
         throw StateError('Meet tidak ditemukan.');
@@ -150,6 +153,23 @@ class FirestoreMeetRepository implements MeetRepository {
         if (status == RsvpStatus.waitlist)
           'waitlistCount': meet.waitlistCount + 1,
       });
+
+      if (status == RsvpStatus.going &&
+          meet.fee > 0 &&
+          !paymentSnapshot.exists) {
+        transaction.set(paymentRef, {
+          'meetId': meetId,
+          'userId': userId,
+          'amount': meet.fee,
+          'currency': 'IDR',
+          'method': PaymentMethod.cash.name,
+          'status': PaymentStatus.pending.name,
+          'confirmedBy': null,
+          'note': null,
+          'paidAt': null,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
 
       return status;
     });
