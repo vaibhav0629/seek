@@ -7,6 +7,7 @@ import 'package:seek/features/clubs/data/club_providers.dart';
 import 'package:seek/features/clubs/domain/entities/club_member.dart';
 import 'package:seek/features/meets/data/meet_permissions.dart';
 import 'package:seek/features/meets/data/meet_providers.dart';
+import 'package:seek/features/notifications/data/notification_actions.dart';
 import 'package:seek/features/payments/data/payment_providers.dart';
 import 'package:seek/features/payments/domain/entities/payment.dart';
 import 'package:seek/features/payments/presentation/widgets/mark_paid_button.dart';
@@ -101,5 +102,7 @@ class PaymentsScreen extends ConsumerWidget {
     await ref
         .read(meetRepositoryProvider)
         .setPaid(meetId: payment.meetId, userId: payment.userId, paid: true);
+    // Tell the member that the payment is confirmed.
+    await notifyPaymentConfirmed(ref, payment, confirmedBy);
   }
 }
