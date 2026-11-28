@@ -50,3 +50,7 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+dependencies {                                     // <- add this block at the very bottom,
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")   // outside android { }
+}

@@ -8,6 +8,8 @@ import 'package:seek/features/chat/domain/entities/message.dart';
 import 'package:seek/features/chat/presentation/widgets/message_bubble.dart';
 import 'package:seek/features/chat/presentation/widgets/message_input.dart';
 import 'package:seek/features/clubs/data/club_providers.dart';
+import 'package:seek/features/notifications/data/notification_actions.dart';
+import 'package:seek/features/notifications/data/notification_providers.dart';
 import 'package:seek/features/profile/data/profile_providers.dart';
 
 /// Group chat of one club (chatId is the clubId). Only members can open it.
@@ -61,7 +63,15 @@ class _ChatViewState extends ConsumerState<_ChatView> {
   final _scrollController = ScrollController();
 
   @override
+  void initState() {
+    super.initState();
+    // No notification banner for the chat I am reading.
+    activeChatId.value = widget.clubId;
+  }
+
+  @override
   void dispose() {
+    if (activeChatId.value == widget.clubId) activeChatId.value = null;
     _scrollController.dispose();
     super.dispose();
   }
@@ -93,6 +103,14 @@ class _ChatViewState extends ConsumerState<_ChatView> {
               text: text,
             ),
           );
+      // Tell the other members of the club.
+      await notifyClubMembers(
+        ref,
+        clubId: widget.clubId,
+        senderId: userId,
+        senderName: name,
+        text: text,
+      );
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
